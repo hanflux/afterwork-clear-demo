@@ -1,0 +1,2234 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 内部原型</title><style>body{margin:0;background:#101a2b;display:flex;justify-content:center}canvas{width:min(100vw,calc(100vh * .5625));height:auto;touch-action:none}</style><canvas aria-label="停车棋盘，点击车辆沿箭头离场"></canvas><script>"use strict";
+(() => {
+  // levels/prototype.json
+  var prototype_default = [
+    {
+      level_id: "tutorial-01",
+      schema_version: 1,
+      seed: 1,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S"
+        }
+      ],
+      solution: [
+        "B",
+        "A",
+        "C",
+        "D"
+      ]
+    },
+    {
+      level_id: "practice-02",
+      schema_version: 1,
+      seed: 2,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 0,
+          y: 2,
+          length: 3,
+          direction: "E"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 2,
+          y: 4,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "C",
+        "B",
+        "A",
+        "D"
+      ]
+    },
+    {
+      level_id: "shift-03",
+      schema_version: 1,
+      seed: 7,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 5,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 1,
+          y: 5,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "F",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F",
+        "E"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 5,
+        occupied_cells: 12
+      }
+    },
+    {
+      level_id: "shift-04",
+      schema_version: 1,
+      seed: 21,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 1,
+          y: 2,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 2,
+          y: 0,
+          length: 3,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "B",
+        "E",
+        "F",
+        "A",
+        "C",
+        "D"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 3,
+        occupied_cells: 14
+      }
+    },
+    {
+      level_id: "shift-05",
+      schema_version: 1,
+      seed: 42,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 3,
+          y: 1,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 2,
+          y: 0,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "E",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "F",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F",
+        "E"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 5,
+        occupied_cells: 14
+      }
+    },
+    {
+      level_id: "shift-06",
+      schema_version: 1,
+      seed: 56,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "C",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 4,
+          y: 3,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 0,
+          y: 1,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 5,
+          y: 1,
+          length: 3,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "C",
+        "D",
+        "F",
+        "B",
+        "E"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 4,
+        occupied_cells: 15
+      }
+    },
+    {
+      level_id: "shift-07",
+      schema_version: 1,
+      seed: 36,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 5,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 1,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "E",
+        "F",
+        "G",
+        "D"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 15
+      }
+    },
+    {
+      level_id: "shift-08",
+      schema_version: 1,
+      seed: 43,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 1,
+          y: 1,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 5,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 0,
+          y: 2,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "A"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 16
+      }
+    },
+    {
+      level_id: "shift-09",
+      schema_version: 1,
+      seed: 50,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "E",
+          x: 4,
+          y: 0,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "F",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "E",
+        "D",
+        "F",
+        "G"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 4,
+        occupied_cells: 15
+      }
+    },
+    {
+      level_id: "shift-10",
+      schema_version: 1,
+      seed: 9,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 5,
+          y: 0,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 4,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "F",
+          x: 1,
+          y: 1,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "G",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "H",
+          x: 0,
+          y: 0,
+          length: 3,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "F",
+        "D",
+        "E",
+        "G",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 4,
+        occupied_cells: 19
+      }
+    },
+    {
+      level_id: "shift-11",
+      schema_version: 1,
+      seed: 156,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 5,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 2,
+          y: 1,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "E",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "F",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "G",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "H",
+          x: 4,
+          y: 1,
+          length: 3,
+          direction: "S"
+        }
+      ],
+      solution: [
+        "A",
+        "C",
+        "D",
+        "F",
+        "G",
+        "B",
+        "E",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 5,
+        occupied_cells: 18
+      }
+    },
+    {
+      level_id: "shift-12",
+      schema_version: 1,
+      seed: 233,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 5,
+          y: 1,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "H",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 16
+      }
+    },
+    {
+      level_id: "shift-13",
+      schema_version: 1,
+      seed: 17,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 5,
+          y: 2,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 4,
+          y: 2,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "G",
+          x: 1,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "H",
+          x: 1,
+          y: 0,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "I",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "E",
+        "F",
+        "H",
+        "I",
+        "D",
+        "G"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 21
+      }
+    },
+    {
+      level_id: "shift-14",
+      schema_version: 1,
+      seed: 31,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "D",
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "H",
+          x: 0,
+          y: 1,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "I",
+          x: 4,
+          y: 5,
+          length: 2,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "E",
+        "F",
+        "H",
+        "I",
+        "C",
+        "D",
+        "G"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 19
+      }
+    },
+    {
+      level_id: "shift-15",
+      schema_version: 1,
+      seed: 38,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 5,
+          y: 0,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 0,
+          y: 2,
+          length: 3,
+          direction: "E"
+        },
+        {
+          id: "H",
+          x: 1,
+          y: 1,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "I",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "W"
+        }
+      ],
+      solution: [
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "I",
+        "A",
+        "G",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 19
+      }
+    },
+    {
+      level_id: "shift-16",
+      schema_version: 1,
+      seed: 4,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 5,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "H",
+          x: 1,
+          y: 1,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "I",
+          x: 0,
+          y: 0,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "J",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "W"
+        }
+      ],
+      solution: [
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "I",
+        "A",
+        "B",
+        "H",
+        "J"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 21
+      }
+    },
+    {
+      level_id: "shift-17",
+      schema_version: 1,
+      seed: 291,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 1,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "E",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "H",
+          x: 5,
+          y: 1,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "I",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "J",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "E"
+        }
+      ],
+      solution: [
+        "C",
+        "D",
+        "E",
+        "G",
+        "I",
+        "J",
+        "A",
+        "B",
+        "F",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 21
+      }
+    },
+    {
+      level_id: "shift-18",
+      schema_version: 1,
+      seed: 298,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 1,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "F",
+          x: 2,
+          y: 3,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "G",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "H",
+          x: 5,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "I",
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "J",
+          x: 1,
+          y: 1,
+          length: 2,
+          direction: "W"
+        }
+      ],
+      solution: [
+        "A",
+        "D",
+        "F",
+        "G",
+        "H",
+        "J",
+        "B",
+        "C",
+        "E",
+        "I"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 6,
+        occupied_cells: 21
+      }
+    },
+    {
+      level_id: "shift-19",
+      schema_version: 1,
+      seed: 166,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 2,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "F",
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "H",
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "I",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "J",
+          x: 1,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "K",
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "W"
+        }
+      ],
+      solution: [
+        "A",
+        "C",
+        "D",
+        "E",
+        "G",
+        "H",
+        "I",
+        "B",
+        "F",
+        "J",
+        "K"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 23
+      }
+    },
+    {
+      level_id: "shift-20",
+      schema_version: 1,
+      seed: 320,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 5,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "D",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "E",
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 2,
+          y: 2,
+          length: 3,
+          direction: "E"
+        },
+        {
+          id: "H",
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "I",
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "J",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "K",
+          x: 1,
+          y: 0,
+          length: 3,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "D",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "B",
+        "C",
+        "E",
+        "F"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 24
+      }
+    },
+    {
+      level_id: "shift-21",
+      schema_version: 1,
+      seed: 593,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 5,
+          y: 3,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 2,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "G",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "H",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "I",
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "J",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "K",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "F",
+        "G",
+        "H",
+        "J",
+        "K",
+        "C",
+        "D",
+        "E",
+        "I"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 23
+      }
+    },
+    {
+      level_id: "shift-22",
+      schema_version: 1,
+      seed: 664,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 3,
+          y: 5,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "C",
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "E",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "F",
+          x: 5,
+          y: 1,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "G",
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "H",
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "I",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "J",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "K",
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "L",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W"
+        }
+      ],
+      solution: [
+        "B",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "A",
+        "C",
+        "E",
+        "K",
+        "L"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 7,
+        occupied_cells: 26
+      }
+    },
+    {
+      level_id: "shift-23",
+      schema_version: 1,
+      seed: 671,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 1,
+          y: 3,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "C",
+          x: 1,
+          y: 1,
+          length: 3,
+          direction: "W"
+        },
+        {
+          id: "D",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 0,
+          y: 2,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "F",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "G",
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "H",
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "I",
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "J",
+          x: 5,
+          y: 0,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "K",
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "L",
+          x: 2,
+          y: 2,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "G",
+        "I",
+        "K",
+        "F",
+        "H",
+        "J",
+        "L"
+      ],
+      metrics: {
+        dependency_layers: 2,
+        initial_exits: 8,
+        occupied_cells: 27
+      }
+    },
+    {
+      level_id: "shift-24",
+      schema_version: 1,
+      seed: 48,
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          id: "A",
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "C",
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "D",
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "E",
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "F",
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "G",
+          x: 0,
+          y: 0,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "H",
+          x: 1,
+          y: 3,
+          length: 2,
+          direction: "S"
+        },
+        {
+          id: "I",
+          x: 1,
+          y: 0,
+          length: 3,
+          direction: "N"
+        },
+        {
+          id: "J",
+          x: 4,
+          y: 5,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "K",
+          x: 5,
+          y: 0,
+          length: 3,
+          direction: "S"
+        },
+        {
+          id: "L",
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      solution: [
+        "C",
+        "F",
+        "G",
+        "I",
+        "J",
+        "L",
+        "A",
+        "D",
+        "E",
+        "K",
+        "B",
+        "H"
+      ],
+      metrics: {
+        dependency_layers: 3,
+        initial_exits: 6,
+        occupied_cells: 27
+      }
+    }
+  ];
+
+  // src/core/game.ts
+  function cells(c) {
+    return Array.from({ length: c.length }, (_, i) => [c.x + (["E", "W"].includes(c.direction) ? i : 0), c.y + (["N", "S"].includes(c.direction) ? i : 0)]);
+  }
+  function validate(l) {
+    if (l.width < 1 || l.height < 1 || !l.cars.length) throw Error("Invalid board");
+    const occupied = /* @__PURE__ */ new Set(), ids = /* @__PURE__ */ new Set();
+    for (const c of l.cars) {
+      if (ids.has(c.id) || !["N", "S", "E", "W"].includes(c.direction) || !Number.isInteger(c.length) || c.length < 1) throw Error("Invalid car");
+      ids.add(c.id);
+      for (const [x, y] of cells(c)) {
+        const k = `${x},${y}`;
+        if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= l.width || y >= l.height || occupied.has(k)) throw Error("Invalid occupancy");
+        occupied.add(k);
+      }
+    }
+  }
+  function canExit(l, id) {
+    const c = l.cars.find((v) => v.id === id);
+    if (!c) return false;
+    const occupied = new Set(l.cars.filter((v) => v.id !== id).flatMap((v) => cells(v).map((p) => p.join(","))));
+    const [dx, dy] = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[c.direction];
+    for (const [x, y] of cells(c)) {
+      let a = x + dx, b = y + dy;
+      while (a >= 0 && b >= 0 && a < l.width && b < l.height) {
+        if (occupied.has(`${a},${b}`)) return false;
+        a += dx;
+        b += dy;
+      }
+    }
+    return true;
+  }
+  function remove(l, id) {
+    return canExit(l, id) ? { ...l, cars: l.cars.filter((v) => v.id !== id) } : l;
+  }
+
+  // src/app/save.ts
+  function loadSave(raw, count) {
+    const fallback = { version: 2, completed: 0, current: 0, removed: [], vibration: false };
+    try {
+      const s = JSON.parse(raw || "null");
+      if (!s || count < 1) return fallback;
+      if (s.version === 1) {
+        if (!Number.isInteger(s.completed) || s.completed < 0) return fallback;
+        const completed = Math.min(count, s.completed);
+        return { ...fallback, completed, current: Math.min(completed, count - 1) };
+      }
+      if (s.version !== 2 || !Number.isInteger(s.completed) || s.completed < 0 || !Number.isInteger(s.current) || s.current < 0 || s.current >= count || s.current > s.completed || !Array.isArray(s.removed) || s.removed.length > 36 || s.removed.some((id) => typeof id !== "string") || new Set(s.removed).size !== s.removed.length) return fallback;
+      return { version: 2, completed: Math.min(count, s.completed), current: s.current, removed: s.removed, vibration: s.vibration === true };
+    } catch {
+      return fallback;
+    }
+  }
+
+  // src/app/main.ts
+  function start(host) {
+    const levels = prototype_default;
+    levels.forEach(validate);
+    const canvas2 = host.canvas, ctx = canvas2.getContext("2d");
+    let state;
+    try {
+      state = loadSave(host.load(), levels.length);
+    } catch {
+      state = loadSave(null, levels.length);
+    }
+    let board = copy(levels[state.current]), paused = false, lockedUntil = 0, highlight = "", bad = false;
+    let message = state.current === 0 ? "\u5148\u70B9 \u2191 B\uFF0C\u518D\u8BA9 \u2192 A \u79BB\u573A\uFF1B\u88AB\u6321\u4F4F\u4E0D\u6263\u5206" : "\u6CBF\u7BAD\u5934\u9A76\u51FA\u56DB\u8FB9\uFF1B\u53EA\u79FB\u9664\uFF0C\u4E0D\u5012\u8F66";
+    for (const id of state.removed) {
+      if (!canExit(board, id)) {
+        state.removed = [];
+        board = copy(levels[state.current]);
+        message = "\u5173\u5185\u5B58\u6863\u65E0\u6548\uFF0C\u5DF2\u6062\u590D\u672C\u5173";
+        break;
+      }
+      board = remove(board, id);
+    }
+    function copy(l) {
+      return { ...l, cars: l.cars.map((c) => ({ ...c })), solution: [...l.solution] };
+    }
+    function persist() {
+      try {
+        host.save(JSON.stringify(state));
+      } catch {
+        message += " \xB7 \u5B58\u50A8\u4E0D\u53EF\u7528";
+      }
+    }
+    const size = 52, ox = 24, oy = 142;
+    function button(x, y, w, text) {
+      ctx.fillStyle = "#24334b";
+      ctx.fillRect(x, y, w, 44);
+      ctx.fillStyle = "#fff";
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(text, x + w / 2, y + 28);
+    }
+    function drawCar(c) {
+      const horizontal = ["E", "W"].includes(c.direction), w = (horizontal ? c.length : 1) * size - 8, h = (horizontal ? 1 : c.length) * size - 8, x = ox + c.x * size + 4, y = oy + c.y * size + 4;
+      ctx.fillStyle = highlight === c.id ? bad ? "#f48b92" : "#ffe76a" : ["#7bcbbc", "#edae7e", "#8cacf2", "#d5a0cf"][c.id.charCodeAt(0) % 4];
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#142035";
+      ctx.font = "bold 24px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText({ N: "\u2191", S: "\u2193", E: "\u2192", W: "\u2190" }[c.direction], x + w / 2, y + h / 2 + 8);
+      ctx.font = "12px sans-serif";
+      ctx.fillText(c.id, x + 10, y + 16);
+    }
+    function draw() {
+      ctx.fillStyle = "#101a2b";
+      ctx.fillRect(0, 0, 360, 640);
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#f3d48c";
+      ctx.font = "bold 26px sans-serif";
+      ctx.fillText("\u522B\u5835\u7740\u4E0B\u73ED", 24, 45);
+      ctx.font = "15px sans-serif";
+      ctx.fillStyle = "#fff";
+      ctx.fillText(`\u5185\u90E8\u539F\u578B \xB7 \u7B2C ${state.current + 1}/${levels.length} \u5173 \xB7 \u5269 ${board.cars.length} \u8F86`, 24, 76);
+      ctx.font = "12px sans-serif";
+      ctx.fillText(paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : message, 24, 110);
+      for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
+        ctx.fillStyle = (x + y) % 2 ? "#202e43" : "#1c283b";
+        ctx.fillRect(ox + x * size, oy + y * size, 50, 50);
+      }
+      for (const c of board.cars) drawCar(c);
+      button(24, 482, 92, "\u91CD\u5F00");
+      button(134, 482, 92, "\u514D\u8D39\u63D0\u793A");
+      button(244, 482, 92, "\u4E0B\u4E00\u5173");
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#99abc3";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("\u65E0\u5E7F\u544A \xB7 \u65E0\u4E0A\u4F20 \xB7 \u8FDB\u5EA6\u4EC5\u4FDD\u5B58\u5728\u672C\u673A", 24, 559);
+      ctx.fillText(`\u5DF2\u5B8C\u6210 ${state.completed} \u5173 \xB7 \u6CBF\u7BAD\u5934\u5B8C\u6574\u79BB\u573A`, 24, 582);
+      button(24, 596, 180, `\u9707\u52A8\uFF1A${state.vibration ? "\u5F00" : "\u5173"}\uFF08\u53EF\u9009\uFF09`);
+    }
+    host.input((x, y) => {
+      if (paused || Date.now() < lockedUntil) return;
+      if (y >= 596 && y <= 640 && x >= 24 && x <= 204) {
+        state.vibration = !state.vibration;
+        message = "\u9707\u52A8\u8BBE\u7F6E\u5DF2\u4FDD\u5B58";
+        persist();
+        draw();
+        return;
+      }
+      if (y >= 482 && y <= 526) {
+        if (x >= 24 && x <= 116) {
+          board = copy(levels[state.current]);
+          state.removed = [];
+          message = "\u5DF2\u91CD\u5F00";
+          highlight = "";
+          persist();
+        } else if (x >= 134 && x <= 226) {
+          highlight = board.cars.find((c2) => canExit(board, c2.id))?.id || "";
+          bad = false;
+          message = highlight ? "\u4EAE\u8272\u8F66\u8F86\u53EF\u4EE5\u79BB\u5F00" : "\u5DF2\u7ECF\u6E05\u7A7A";
+        } else if (x >= 244 && x <= 336) {
+          if (board.cars.length) message = "\u5148\u6E05\u7A7A\u5F53\u524D\u68CB\u76D8";
+          else if (state.current < levels.length - 1) {
+            state.current++;
+            state.removed = [];
+            board = copy(levels[state.current]);
+            message = "\u65B0\u7684\u4E00\u5173";
+            highlight = "";
+            persist();
+          } else message = "24 \u5173\u539F\u578B\u5B8C\u6210\uFF0C\u671F\u5F85\u771F\u5B9E\u8BD5\u73A9\u53CD\u9988";
+        }
+        draw();
+        return;
+      }
+      const gx = Math.floor((x - ox) / size), gy = Math.floor((y - oy) / size);
+      const c = board.cars.find((c2) => gx >= c2.x && gy >= c2.y && gx < c2.x + (["E", "W"].includes(c2.direction) ? c2.length : 1) && gy < c2.y + (["N", "S"].includes(c2.direction) ? c2.length : 1));
+      if (!c) return;
+      const next = remove(board, c.id);
+      if (next === board) {
+        message = `${c.id} \u524D\u9762\u6709\u8F66\uFF0C\u5148\u8BA9\u5176\u4ED6\u8F66\u79BB\u5F00`;
+        highlight = c.id;
+        bad = true;
+      } else {
+        board = next;
+        highlight = "";
+        bad = false;
+        lockedUntil = Date.now() + 140;
+        state.removed.push(c.id);
+        message = `${c.id} \u5DF2\u4E0B\u73ED\uFF01`;
+        if (state.vibration) try {
+          host.feedback?.();
+        } catch {
+        }
+        if (!board.cars.length) {
+          state.completed = Math.max(state.completed, state.current + 1);
+          message = "\u6E05\u573A\u5B8C\u6210\uFF01\u70B9\u51FB\u4E0B\u4E00\u5173";
+        }
+        persist();
+      }
+      draw();
+    });
+    host.lifecycle?.((hidden) => {
+      paused = hidden;
+      lockedUntil = 0;
+      persist();
+      draw();
+    });
+    draw();
+  }
+
+  // src/platform/web.ts
+  var canvas = document.querySelector("canvas");
+  canvas.width = 360;
+  canvas.height = 640;
+  start({
+    canvas,
+    load: () => localStorage.getItem("nc-mg-001"),
+    save: (s) => localStorage.setItem("nc-mg-001", s),
+    feedback: () => navigator.vibrate?.(20),
+    lifecycle: (fn) => {
+      document.addEventListener("freeze", () => fn(true));
+      document.addEventListener("resume", () => fn(document.hidden));
+      document.addEventListener("visibilitychange", () => fn(document.hidden));
+      window.addEventListener("pagehide", () => fn(true));
+      window.addEventListener("pageshow", () => fn(document.hidden));
+    },
+    input: (fn) => {
+      canvas.addEventListener("pointerdown", (e) => {
+        if (!e.isPrimary || e.button !== 0) return;
+        e.preventDefault();
+        const r = canvas.getBoundingClientRect();
+        fn((e.clientX - r.left) * 360 / r.width, (e.clientY - r.top) * 640 / r.height);
+      });
+    }
+  });
+})();
+</script></html>
