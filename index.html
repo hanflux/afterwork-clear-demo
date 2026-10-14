@@ -1,0 +1,311 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>回声开关 · 方案 B 机制试验</title><style>body{margin:0;background:#11282b;display:flex;justify-content:center}canvas{width:min(100vw,calc(100vh * .5625));height:auto;touch-action:none}</style><canvas aria-label="回声灯板，点灯并在下一拍传递亮灭"></canvas><script>"use strict";
+(() => {
+  // levels/echo.json
+  var echo_default = [
+    {
+      id: "echo-1",
+      title: "\u5148\u5B66\u4F1A\u6536\u62CD",
+      initial: 186,
+      minimum: 2,
+      limit: 3,
+      solution: [
+        4,
+        -1
+      ]
+    },
+    {
+      id: "echo-2",
+      title: "\u89D2\u843D\u7684\u63A5\u529B",
+      initial: 13,
+      minimum: 3,
+      limit: 4,
+      solution: [
+        0,
+        2,
+        -1
+      ]
+    },
+    {
+      id: "echo-3",
+      title: "\u5148\u4EAE\uFF0C\u518D\u7184\u706D",
+      initial: 84,
+      minimum: 4,
+      limit: 5,
+      solution: [
+        0,
+        1,
+        3,
+        -1
+      ]
+    },
+    {
+      id: "echo-4",
+      title: "\u540C\u4E00\u76CF\uFF0C\u70B9\u4E24\u62CD",
+      initial: 174,
+      minimum: 4,
+      limit: 5,
+      solution: [
+        1,
+        4,
+        4,
+        -1
+      ]
+    }
+  ];
+
+  // src/echo/core.ts
+  var fresh = (level) => ({ mask: level.initial, pending: null, turns: 0 });
+  function neighbors(cell) {
+    let mask = 0;
+    const x = cell % 3, y = Math.floor(cell / 3);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const a = x + dx, b = y + dy;
+      if (a >= 0 && a < 3 && b >= 0 && b < 3) mask |= 1 << b * 3 + a;
+    }
+    return mask;
+  }
+  var solved = (state) => state.mask === 0 && state.pending === null;
+  function step(state, action) {
+    if (!Number.isInteger(action) || action < -1 || action > 8 || action === -1 && !state.pending || solved(state)) return state;
+    let mask = state.mask;
+    if (state.pending) {
+      const affected = neighbors(state.pending.cell);
+      mask = state.pending.value ? mask | affected : mask & ~affected;
+    }
+    if (action === -1) return { mask, pending: null, turns: state.turns + 1 };
+    mask ^= 1 << action;
+    return { mask, pending: { cell: action, value: Boolean(mask & 1 << action) }, turns: state.turns + 1 };
+  }
+  function search(state, budget) {
+    const queue = [{ state, path: [] }], seen = /* @__PURE__ */ new Set();
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      if (solved(item.state)) return item.path;
+      if (item.path.length >= budget) continue;
+      for (let a = -1; a < 9; a++) {
+        const next = step(item.state, a);
+        if (next === item.state) continue;
+        const key = `${next.mask}/${next.pending ? next.pending.cell + ":" + Number(next.pending.value) : "-"}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        queue.push({ state: next, path: [...item.path, a] });
+      }
+    }
+    return null;
+  }
+  function load(raw, levels) {
+    const fallback = { version: 1, completed: 0, current: 0, actions: [] };
+    try {
+      const s = JSON.parse(raw || "null");
+      if (!s || s.version !== 1 || !Number.isInteger(s.completed) || s.completed < 0 || s.completed > levels.length || !Number.isInteger(s.current) || s.current < 0 || s.current >= levels.length || s.current > s.completed || !Array.isArray(s.actions) || s.actions.length > levels[s.current].limit) return fallback;
+      let board = fresh(levels[s.current]);
+      for (const a of s.actions) {
+        const next = step(board, a);
+        if (next === board) return { ...fallback, completed: s.completed, current: s.current };
+        board = next;
+      }
+      return { version: 1, completed: Math.max(s.completed, solved(board) ? s.current + 1 : 0), current: s.current, actions: s.actions };
+    } catch {
+      return fallback;
+    }
+  }
+
+  // src/echo/app.ts
+  function start(host) {
+    const levels = echo_default, ctx = host.canvas.getContext("2d");
+    let save;
+    try {
+      save = load(host.load(), levels);
+    } catch {
+      save = load(null, levels);
+    }
+    let board, paused = false, lockedUntil = 0, hint = null, flash = 0, timer;
+    let message = "\u7B2C\u4E00\u5173\uFF1A\u70B9 B2\uFF0C\u518D\u70B9\u300C\u6536\u62CD\u300D";
+    let storageFailed = false;
+    function replay() {
+      board = fresh(levels[save.current]);
+      for (const a of save.actions) board = step(board, a);
+    }
+    replay();
+    const label = (i) => "ABC"[i % 3] + (Math.floor(i / 3) + 1);
+    function persist() {
+      try {
+        host.save(JSON.stringify(save));
+        storageFailed = false;
+      } catch {
+        storageFailed = true;
+      }
+    }
+    function text(s, x, y, size = 14, color = "#e7ecea", align = "left") {
+      ctx.fillStyle = color;
+      ctx.font = `${size}px sans-serif`;
+      ctx.textAlign = align;
+      ctx.fillText(s, x, y);
+    }
+    function button(x, y, w, s, active = false) {
+      ctx.fillStyle = active ? "#f6ce77" : "#293d45";
+      ctx.fillRect(x, y, w, 44);
+      text(s, x + w / 2, y + 28, 15, active ? "#162b2e" : "#e7ecea", "center");
+    }
+    function draw() {
+      ctx.fillStyle = "#11282b";
+      ctx.fillRect(0, 0, 360, 640);
+      text("\u56DE\u58F0\u5F00\u5173", 24, 42, 28, "#f6ce77");
+      text(`\u673A\u5236\u8BD5\u9A8C \xB7 ${save.current + 1}/4  ${levels[save.current].title}`, 24, 73, 15);
+      text("\u6BCF\u62CD\u5148\u5151\u73B0\u65E7\u56DE\u58F0\uFF0C\u518D\u53CD\u8F6C\u4F60\u70B9\u7684\u706F\u3002", 24, 105, 13);
+      text("\u65B0\u7684\u4EAE\u706D\uFF0C\u7559\u5230\u4E0B\u4E00\u62CD\u4F20\u7ED9\u56DB\u90BB\u3002", 24, 126, 13);
+      text("\u76EE\u6807\uFF1A\u5168\u706D\u4E14\u6CA1\u6709\u5F85\u4F20\u56DE\u58F0\u3002\u9752\u6846\u9884\u544A\u4E0B\u4E00\u62CD\u3002", 24, 148, 11, "#a2c5c4");
+      const affected = board.pending ? neighbors(board.pending.cell) : 0;
+      for (let i = 0; i < 9; i++) {
+        const x = 48 + i % 3 * 88, y = 166 + Math.floor(i / 3) * 88, on = Boolean(board.mask & 1 << i);
+        ctx.fillStyle = on ? "#f6ce77" : "#203e43";
+        ctx.fillRect(x, y, 80, 80);
+        if (affected & 1 << i) {
+          ctx.strokeStyle = "#75d6ce";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([5, 4]);
+          ctx.strokeRect(x + 3, y + 3, 74, 74);
+          ctx.setLineDash([]);
+        }
+        if (hint === i || flash & 1 << i) {
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(x + 6, y + 6, 68, 68);
+        }
+        text(on ? "\u25CF" : "\u25CB", x + 40, y + 43, 30, on ? "#273b39" : "#a2c5c4", "center");
+        text(label(i), x + 40, y + 68, 12, on ? "#273b39" : "#a2c5c4", "center");
+      }
+      text(board.pending ? `\u4E0B\u4E00\u62CD\uFF1A\u628A ${label(board.pending.cell)} \u7684\u300C${board.pending.value ? "\u4EAE" : "\u706D"}\u300D\u4F20\u56DB\u90BB` : "\u4E0B\u4E00\u62CD\uFF1A\u6CA1\u6709\u56DE\u58F0", 24, 445, 14, "#75d6ce");
+      text(paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : message, 24, 470, 13);
+      button(24, 488, 96, "\u6536\u62CD", hint === -1);
+      button(132, 488, 96, "\u64A4\u9500");
+      button(240, 488, 96, "\u91CD\u5F00");
+      button(24, 548, 148, "\u514D\u8D39\u63D0\u793A");
+      button(188, 548, 148, save.current === 3 ? "\u518D\u73A9\u4E00\u8F6E" : "\u4E0B\u4E00\u5C0F\u5173", solved(board));
+      text(`\u5DF2\u7528 ${board.turns}/${levels[save.current].limit} \u62CD \xB7 \u5DF2\u5B8C\u6210 ${save.completed}/4`, 24, 615, 12, "#a2c5c4");
+      if (storageFailed) text("\u5B58\u50A8\u4E0D\u53EF\u7528\uFF0C\u672C\u5C40\u4ECD\u53EF\u73A9", 24, 635, 11, "#f6ce77");
+    }
+    function cancelPulse() {
+      if (timer !== void 0) clearTimeout(timer);
+      timer = void 0;
+      flash = 0;
+      lockedUntil = 0;
+    }
+    function action(a) {
+      if (solved(board)) {
+        message = "\u5DF2\u6536\u597D\u8FD9\u8F6E\u56DE\u58F0\uFF0C\u8BD5\u8BD5\u4E0B\u4E00\u5C0F\u5173";
+        draw();
+        return;
+      }
+      if (board.turns >= levels[save.current].limit) {
+        message = "\u62CD\u6570\u7528\u5B8C\uFF0C\u53EF\u64A4\u9500\u6216\u91CD\u5F00\uFF1B\u4E0D\u6263\u4EFB\u4F55\u8D44\u6E90";
+        draw();
+        return;
+      }
+      const old = board, next = step(board, a);
+      if (next === old) {
+        message = "\u6CA1\u6709\u5F85\u4F20\u56DE\u58F0\uFF0C\u5148\u70B9\u4E00\u76CF\u706F";
+        draw();
+        return;
+      }
+      board = next;
+      save.actions.push(a);
+      hint = null;
+      flash = old.pending ? neighbors(old.pending.cell) : 0;
+      lockedUntil = Date.now() + 180;
+      message = solved(board) ? "\u5168\u706D\uFF0C\u56DE\u58F0\u4E5F\u6536\u597D\u4E86\uFF01" : a === -1 ? "\u65E7\u56DE\u58F0\u5DF2\u4F20\u5B8C\uFF0C\u73B0\u5728\u53EF\u7EE7\u7EED\u70B9\u706F" : `\u5DF2\u53CD\u8F6C ${label(a)}\uFF1B\u9752\u6846\u662F\u4E0B\u4E00\u62CD\u7684\u9884\u544A`;
+      if (solved(board)) save.completed = Math.max(save.completed, save.current + 1);
+      persist();
+      draw();
+      timer = setTimeout(() => {
+        flash = 0;
+        timer = void 0;
+        draw();
+      }, 180);
+    }
+    host.input((x, y) => {
+      if (paused) return;
+      if (y >= 488 && y <= 532 && x >= 132 && x <= 336) {
+        cancelPulse();
+        hint = null;
+        if (x <= 228) {
+          save.actions.pop();
+          replay();
+          message = "\u5DF2\u64A4\u9500\u4E0A\u4E00\u62CD\uFF0C\u5305\u542B\u5F85\u4F20\u56DE\u58F0";
+        } else if (x >= 240) {
+          save.actions = [];
+          replay();
+          message = "\u5DF2\u91CD\u5F00\u8FD9\u4E00\u5C0F\u5173";
+        }
+        persist();
+        draw();
+        return;
+      }
+      if (Date.now() < lockedUntil) return;
+      if (y >= 488 && y <= 532 && x >= 24 && x <= 120) {
+        action(-1);
+        return;
+      }
+      if (y >= 548 && y <= 592) {
+        if (x >= 24 && x <= 172) {
+          const path = search(board, levels[save.current].limit - board.turns);
+          hint = path?.[0] ?? null;
+          message = solved(board) ? "\u5DF2\u5B8C\u6210" : path?.length ? hint === -1 ? "\u63D0\u793A\uFF1A\u70B9\u300C\u6536\u62CD\u300D\uFF0C\u53EA\u5151\u73B0\u65E7\u56DE\u58F0" : `\u63D0\u793A\uFF1A\u4E0B\u4E00\u62CD\u5148\u70B9 ${label(hint)}` : "\u8FD9\u6761\u8DEF\u7EBF\u62CD\u6570\u4E0D\u591F\uFF0C\u8BD5\u8BD5\u64A4\u9500\uFF1B\u63D0\u793A\u514D\u8D39";
+          draw();
+          return;
+        }
+        if (x >= 188 && x <= 336) {
+          if (!solved(board)) {
+            message = "\u5148\u5168\u706D\uFF0C\u5E76\u628A\u6700\u540E\u7684\u56DE\u58F0\u6536\u5B8C";
+            draw();
+            return;
+          }
+          save.current = (save.current + 1) % levels.length;
+          save.actions = [];
+          replay();
+          message = save.current === 0 ? "\u7B2C\u4E00\u5173\uFF1A\u70B9 B2\uFF0C\u518D\u70B9\u300C\u6536\u62CD\u300D" : "\u89C2\u5BDF\u9752\u6846\uFF1A\u4E0A\u4E00\u62CD\u4F1A\u5148\u6539\u52A8\u8FD9\u4E9B\u706F";
+          hint = null;
+          persist();
+          draw();
+          return;
+        }
+      }
+      const col = Math.floor((x - 48) / 88), row = Math.floor((y - 166) / 88);
+      if (col >= 0 && col < 3 && row >= 0 && row < 3 && (x - 48) % 88 <= 80 && (y - 166) % 88 <= 80) action(row * 3 + col);
+    });
+    host.lifecycle?.((hidden) => {
+      paused = hidden;
+      cancelPulse();
+      persist();
+      draw();
+    });
+    draw();
+  }
+
+  // src/platform/web.ts
+  var canvas = document.querySelector("canvas");
+  canvas.width = 360;
+  canvas.height = 640;
+  start({
+    canvas,
+    load: () => localStorage.getItem("nc-mg-001-echo-v1"),
+    save: (s) => localStorage.setItem("nc-mg-001-echo-v1", s),
+    feedback: () => navigator.vibrate?.(20),
+    lifecycle: (fn) => {
+      document.addEventListener("freeze", () => fn(true));
+      document.addEventListener("resume", () => fn(document.hidden));
+      document.addEventListener("visibilitychange", () => fn(document.hidden));
+      window.addEventListener("pagehide", () => fn(true));
+      window.addEventListener("pageshow", () => fn(document.hidden));
+    },
+    input: (fn) => {
+      canvas.addEventListener("pointerdown", (e) => {
+        if (!e.isPrimary || e.button !== 0) return;
+        e.preventDefault();
+        const r = canvas.getBoundingClientRect();
+        fn((e.clientX - r.left) * 360 / r.width, (e.clientY - r.top) * 640 / r.height);
+      });
+    }
+  });
+})();
+</script></html>
