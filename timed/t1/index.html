@@ -1,0 +1,1096 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 计时挑战 T1</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f0e5;color:#304e59;font:15px system-ui,sans-serif;background-image:radial-gradient(#d9e5d6 1px,transparent 1px);background-size:18px 18px}.shell{max-width:420px;margin:auto;padding:8px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{margin:0;font-size:23px;letter-spacing:-1px;color:#355b60}#sound{min-height:36px;padding:5px 9px;font-size:12px;white-space:nowrap;background:#e1eadd;border-color:#c7d7c6;box-shadow:none}p{margin:5px 0;line-height:1.4}.mode{font-size:12px;color:#789185;margin:2px 0 7px}#levelTitle{font-size:17px;margin:6px 0 2px}#stage{font-size:12px;color:#6a817a;min-height:30px}canvas{width:min(100%,360px);height:auto;margin:auto;touch-action:none;overscroll-behavior:contain;display:block;border-radius:18px;box-shadow:0 5px 0 #c3d3c388,0 8px 15px #354f4d12}#status{min-height:60px;padding:9px 11px;border:1px solid #d8dfcf;border-radius:13px;background:#fffcf2;color:#496661;font-size:14px;box-shadow:0 2px 0 #dedfce}.failure{background:#fff0df!important;color:#a35244!important;border-color:#e2a586!important}.success{background:#dfeddb!important;color:#3d7564!important;border-color:#a9c8ac!important}button,select{min-height:46px;border:1px solid #bbcebf;border-radius:13px;background:#e7eee2;color:#385e5c;font:600 15px system-ui;padding:8px;touch-action:manipulation;box-shadow:0 3px 0 #c2d2bf}button:disabled{opacity:.45;box-shadow:none}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}button:active{transform:translateY(2px);box-shadow:none;filter:brightness(.97)}button:focus-visible,select:focus-visible{outline:3px solid #e6aa58;outline-offset:2px}#next{background:#efbd6b;border-color:#dca858;color:#674e25;box-shadow:0 3px 0 #d5a151}.urgent{background:#f8c49b;border:2px solid #d98766;color:#74462e;box-shadow:0 3px 0 #df9a72}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:12px;color:#72847b}summary{padding:8px 0}#progress,#storage{font-size:11px;color:#7c9185}dialog{max-width:min(94vw,420px);max-height:90svh;overflow:auto;border:1px solid #bacfbc;border-radius:20px;background:#faf8ed;color:#385e5c;padding:18px;box-shadow:0 16px 70px #23423844}dialog::backdrop{background:#223f4266}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#fffdf5;color:#385e5c;border:1px solid #bacfbc;border-radius:8px;margin:8px 0}#choose{width:100%}#feedback{width:100%;background:#f6f3e8;box-shadow:none}.privacy{font-size:11px;color:#7c9185}.secondary{border-top:1px solid #d7dfd0;margin-top:9px;padding-top:3px}@media(max-height:700px){header h1{font-size:20px}#stage{min-height:0;font-size:11px;margin:2px 0}#levelTitle{margin:3px 0!important}.mode{margin:0 0 2px}#status{font-size:13px}.shell{padding-top:5px}#sound{min-height:32px}}
+.boardWrap{position:relative}#hud{position:absolute;top:2px;left:18px;right:18px;height:44px;background:#e6eee5;display:flex;align-items:center;justify-content:space-between;gap:4px;border-radius:12px;color:#355f62;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}#lives{color:#b96d73;letter-spacing:2px}input{width:100%;min-height:46px;border:1px solid #bbcebf;border-radius:10px;padding:8px;background:#fffdf5;color:#385e5c;font:16px system-ui}a{color:#3f776c}#harder{margin-top:6px}</style><main class="shell"><header><h1>别堵着下班</h1><button id="sound" aria-label="切换音效" aria-pressed="true">♪ 音效开</button></header><p class="mode">计时挑战 T1 · 经典事件规则 · 每个种子一局新挑战</p><h2 id="levelTitle"></h2><p id="stage"></p><div class="boardWrap"><div id="hud" aria-label="本局计时和机会"><span id="elapsed">00:00.0</span><span id="penalty">+0s</span><span id="lives">♥♥♥</span></div><canvas id="board" aria-label="事件停车棋盘：黄色钥匙K触发①闸，蓝色菱形L触发②闸，皇冠老板B等待名单员工离场"></canvas></div><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">免费重开</button><button id="hint">免费提示</button><button id="next">再来一局 →</button></div><p id="progress"></p><p id="storage"></p><section class="secondary"><details id="rules"><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。简单局只有K①；普通/困难局加入老板与双闸，按本局实际标识判断。黄色钥匙K离场关闭①闸，蓝色菱形L离场关闭②闸；每道闸标出触发身份。戴皇冠的老板B必须等关卡上方名单中的员工全走，才可离场；其他后勤车可能要等老板腾路。首次合法车辆操作开始正计时，前台思考和动画计时，后台暂停。走后经独立求解明确无解才扣一次机会并加10秒，只撤销本步；第三次错误失败。其他可解顺序不罚，阻挡、空白、按钮和动画误触不罚。验证超时或异常时本步不执行也不罚。免费重开本局，三次机会重新开始。</details><p class="privacy">简单/普通/困难为算法分档，真实难度待试玩校准。刷新继续本局；只有下方开局按钮会换棋盘。</p><label>下一局难度<select id="difficulty"><option value="easy">简单 · 单闸观察</option><option value="normal">普通 · 老板与双闸</option><option value="hard">困难 · 更深交接</option></select></label><button id="newChallenge" style="width:100%">新挑战（换一局）</button><label>复刻种子<input id="seed" type="number" inputmode="numeric" min="0" max="4294967295" step="1" aria-label="挑战种子"></label><button id="playSeed">按此种子开局</button> <button id="harder" disabled>提高难度</button><p><a href="../challenge/events/">经典事件闯关</a> · <a href="../challenge/m1/">固定依赖试验</a></p><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p class="privacy">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></section></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>本局卡住了吗？<select id="stuck" data-label="卡关"><option>没有</option><option>本局</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
+(() => {
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key2, value) => key2 in obj ? __defProp(obj, key2, { enumerable: true, configurable: true, writable: true, value }) : obj[key2] = value;
+  var __publicField = (obj, key2, value) => __defNormalProp(obj, typeof key2 !== "symbol" ? key2 + "" : key2, value);
+
+  // levels/random-bank.json
+  var random_bank_default = { easy: [{ width: 6, height: 6, cars: [{ x: 3, y: 3, length: 2, direction: "N", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "C" }, { x: 2, y: 2, length: 2, direction: "E", id: "D" }, { x: 0, y: 5, length: 2, direction: "E", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "B" }, { x: 1, y: 1, length: 2, direction: "W", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 3, length: 2, direction: "S", id: "I" }, { x: 0, y: 0, length: 2, direction: "N", id: "J" }], gates: [{ x: 1, y: 0, trigger: "K" }], schema_version: 1, seed: 19, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 2, length: 2, direction: "E", id: "A" }, { x: 4, y: 4, length: 2, direction: "W", id: "C" }, { x: 2, y: 0, length: 2, direction: "N", id: "D" }, { x: 0, y: 0, length: 2, direction: "S", id: "E" }, { x: 0, y: 5, length: 2, direction: "W", id: "B" }, { x: 1, y: 2, length: 2, direction: "S", id: "L" }, { x: 3, y: 3, length: 2, direction: "W", id: "K" }, { x: 5, y: 1, length: 2, direction: "N", id: "I" }, { x: 3, y: 0, length: 2, direction: "E", id: "J" }, { x: 0, y: 4, length: 2, direction: "W", id: "U" }, { x: 4, y: 5, length: 2, direction: "W", id: "V" }], gates: [{ x: 2, y: 4, trigger: "K" }], schema_version: 1, seed: 34, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "S", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "C" }, { x: 0, y: 2, length: 2, direction: "E", id: "D" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }, { x: 4, y: 2, length: 2, direction: "E", id: "F" }, { x: 3, y: 0, length: 2, direction: "S", id: "G" }, { x: 1, y: 0, length: 2, direction: "S", id: "H" }, { x: 0, y: 4, length: 2, direction: "N", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "J" }, { x: 4, y: 0, length: 2, direction: "N", id: "K" }], gates: [{ x: 3, y: 2, trigger: "K" }], schema_version: 1, seed: 73, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 0, length: 2, direction: "S", id: "A" }, { x: 2, y: 0, length: 2, direction: "E", id: "C" }, { x: 1, y: 5, length: 2, direction: "W", id: "D" }, { x: 4, y: 2, length: 2, direction: "N", id: "L" }, { x: 3, y: 4, length: 2, direction: "S", id: "F" }, { x: 5, y: 2, length: 2, direction: "N", id: "G" }, { x: 0, y: 4, length: 2, direction: "N", id: "K" }, { x: 1, y: 4, length: 2, direction: "E", id: "B" }], gates: [{ x: 4, y: 0, trigger: "K" }], schema_version: 1, seed: 86, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 3, length: 2, direction: "E", id: "A" }, { x: 4, y: 2, length: 2, direction: "E", id: "C" }, { x: 2, y: 3, length: 2, direction: "N", id: "D" }, { x: 5, y: 4, length: 2, direction: "N", id: "L" }, { x: 0, y: 4, length: 2, direction: "N", id: "F" }, { x: 3, y: 1, length: 2, direction: "S", id: "G" }, { x: 4, y: 0, length: 2, direction: "W", id: "B" }, { x: 1, y: 3, length: 2, direction: "N", id: "I" }, { x: 1, y: 2, length: 2, direction: "E", id: "K" }], gates: [{ x: 3, y: 0, trigger: "K" }], schema_version: 1, seed: 229, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 0, length: 2, direction: "N", id: "A" }, { x: 4, y: 0, length: 2, direction: "N", id: "L" }, { x: 1, y: 1, length: 2, direction: "E", id: "D" }, { x: 3, y: 2, length: 2, direction: "N", id: "E" }, { x: 4, y: 2, length: 2, direction: "S", id: "F" }, { x: 3, y: 4, length: 2, direction: "S", id: "B" }, { x: 2, y: 3, length: 2, direction: "N", id: "H" }, { x: 0, y: 3, length: 2, direction: "E", id: "K" }, { x: 0, y: 5, length: 2, direction: "E", id: "J" }, { x: 5, y: 3, length: 2, direction: "S", id: "U" }], gates: [{ x: 5, y: 5, trigger: "K" }], schema_version: 1, seed: 263, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "N", id: "A" }, { x: 2, y: 4, length: 2, direction: "S", id: "C" }, { x: 3, y: 4, length: 2, direction: "W", id: "D" }, { x: 0, y: 4, length: 2, direction: "S", id: "B" }, { x: 0, y: 3, length: 2, direction: "E", id: "L" }, { x: 5, y: 1, length: 2, direction: "N", id: "G" }, { x: 0, y: 1, length: 2, direction: "E", id: "H" }, { x: 3, y: 0, length: 2, direction: "W", id: "I" }, { x: 3, y: 5, length: 2, direction: "E", id: "K" }, { x: 1, y: 4, length: 2, direction: "S", id: "U" }, { x: 3, y: 2, length: 2, direction: "N", id: "V" }], gates: [{ x: 1, y: 0, trigger: "K" }], schema_version: 1, seed: 289, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "E", id: "K" }, { x: 1, y: 1, length: 2, direction: "W", id: "B" }, { x: 3, y: 1, length: 2, direction: "E", id: "D" }, { x: 4, y: 4, length: 2, direction: "E", id: "L" }, { x: 2, y: 5, length: 2, direction: "W", id: "F" }, { x: 4, y: 5, length: 2, direction: "E", id: "G" }, { x: 0, y: 2, length: 2, direction: "S", id: "H" }, { x: 1, y: 3, length: 2, direction: "N", id: "I" }, { x: 3, y: 3, length: 2, direction: "E", id: "J" }], gates: [{ x: 1, y: 5, trigger: "K" }], schema_version: 1, seed: 350, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "S", id: "A" }, { x: 3, y: 4, length: 2, direction: "S", id: "K" }, { x: 1, y: 2, length: 2, direction: "S", id: "D" }, { x: 0, y: 5, length: 2, direction: "W", id: "E" }, { x: 5, y: 4, length: 2, direction: "S", id: "F" }, { x: 3, y: 1, length: 2, direction: "S", id: "G" }, { x: 4, y: 2, length: 2, direction: "N", id: "H" }, { x: 2, y: 4, length: 2, direction: "S", id: "I" }, { x: 0, y: 1, length: 2, direction: "S", id: "J" }, { x: 4, y: 0, length: 2, direction: "E", id: "B" }, { x: 5, y: 1, length: 2, direction: "N", id: "L" }], gates: [{ x: 4, y: 1, trigger: "K" }], schema_version: 1, seed: 389, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "S", id: "A" }, { x: 2, y: 3, length: 2, direction: "E", id: "C" }, { x: 2, y: 0, length: 2, direction: "W", id: "D" }, { x: 1, y: 0, length: 2, direction: "S", id: "B" }, { x: 4, y: 3, length: 2, direction: "E", id: "F" }, { x: 4, y: 0, length: 2, direction: "N", id: "G" }, { x: 3, y: 1, length: 2, direction: "S", id: "H" }, { x: 1, y: 4, length: 2, direction: "W", id: "I" }, { x: 2, y: 5, length: 2, direction: "E", id: "L" }, { x: 0, y: 0, length: 2, direction: "N", id: "K" }, { x: 0, y: 2, length: 2, direction: "S", id: "V" }], gates: [{ x: 5, y: 5, trigger: "K" }], schema_version: 1, seed: 400, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "S", id: "L" }, { x: 4, y: 5, length: 2, direction: "W", id: "K" }, { x: 0, y: 1, length: 2, direction: "S", id: "D" }, { x: 4, y: 2, length: 2, direction: "E", id: "E" }, { x: 3, y: 0, length: 2, direction: "N", id: "F" }, { x: 1, y: 4, length: 2, direction: "N", id: "B" }, { x: 4, y: 0, length: 2, direction: "N", id: "H" }, { x: 4, y: 3, length: 2, direction: "E", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "J" }], gates: [{ x: 0, y: 5, trigger: "K" }], schema_version: 1, seed: 443, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "A" }, { x: 2, y: 2, length: 2, direction: "N", id: "C" }, { x: 4, y: 0, length: 2, direction: "N", id: "B" }, { x: 5, y: 2, length: 2, direction: "N", id: "L" }, { x: 4, y: 3, length: 2, direction: "N", id: "F" }, { x: 2, y: 0, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "K" }, { x: 1, y: 4, length: 2, direction: "E", id: "I" }, { x: 5, y: 0, length: 2, direction: "N", id: "J" }], gates: [{ x: 1, y: 0, trigger: "K" }], schema_version: 1, seed: 446, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 1, length: 2, direction: "S", id: "C" }, { x: 3, y: 1, length: 2, direction: "E", id: "D" }, { x: 4, y: 3, length: 2, direction: "S", id: "E" }, { x: 2, y: 5, length: 2, direction: "W", id: "F" }, { x: 0, y: 4, length: 2, direction: "N", id: "G" }, { x: 1, y: 3, length: 2, direction: "S", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "B" }, { x: 3, y: 0, length: 2, direction: "E", id: "J" }], gates: [{ x: 5, y: 5, trigger: "K" }], schema_version: 1, seed: 543, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 0, length: 2, direction: "E", id: "A" }, { x: 5, y: 4, length: 2, direction: "S", id: "C" }, { x: 4, y: 1, length: 2, direction: "E", id: "K" }, { x: 1, y: 1, length: 2, direction: "N", id: "L" }, { x: 3, y: 4, length: 2, direction: "W", id: "F" }, { x: 2, y: 2, length: 2, direction: "W", id: "G" }, { x: 0, y: 3, length: 2, direction: "N", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "I" }, { x: 2, y: 3, length: 2, direction: "W", id: "B" }, { x: 2, y: 0, length: 2, direction: "S", id: "U" }], gates: [{ x: 0, y: 2, trigger: "K" }], schema_version: 1, seed: 659, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "N", id: "B" }, { x: 5, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 4, length: 2, direction: "N", id: "D" }, { x: 1, y: 2, length: 2, direction: "N", id: "E" }, { x: 3, y: 3, length: 2, direction: "N", id: "K" }, { x: 3, y: 1, length: 2, direction: "E", id: "G" }, { x: 1, y: 1, length: 2, direction: "W", id: "H" }, { x: 2, y: 3, length: 2, direction: "N", id: "I" }, { x: 4, y: 2, length: 2, direction: "S", id: "J" }], gates: [{ x: 4, y: 4, trigger: "K" }], schema_version: 1, seed: 743, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "W", id: "A" }, { x: 0, y: 3, length: 2, direction: "E", id: "K" }, { x: 4, y: 0, length: 2, direction: "N", id: "D" }, { x: 5, y: 0, length: 2, direction: "N", id: "E" }, { x: 3, y: 2, length: 2, direction: "W", id: "L" }, { x: 5, y: 2, length: 2, direction: "S", id: "B" }, { x: 3, y: 5, length: 2, direction: "W", id: "H" }, { x: 2, y: 4, length: 2, direction: "N", id: "I" }], gates: [{ x: 0, y: 5, trigger: "K" }], schema_version: 1, seed: 757, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "E", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "K" }, { x: 5, y: 2, length: 2, direction: "S", id: "D" }, { x: 3, y: 2, length: 2, direction: "N", id: "E" }, { x: 1, y: 4, length: 2, direction: "S", id: "F" }, { x: 2, y: 3, length: 2, direction: "S", id: "G" }, { x: 0, y: 0, length: 2, direction: "E", id: "H" }, { x: 4, y: 1, length: 2, direction: "S", id: "I" }, { x: 3, y: 5, length: 2, direction: "W", id: "L" }, { x: 4, y: 3, length: 2, direction: "S", id: "B" }], gates: [{ x: 2, y: 5, trigger: "K" }], schema_version: 1, seed: 766, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "E", id: "B" }, { x: 1, y: 1, length: 2, direction: "N", id: "C" }, { x: 3, y: 0, length: 2, direction: "N", id: "D" }, { x: 5, y: 0, length: 2, direction: "S", id: "E" }, { x: 1, y: 4, length: 2, direction: "S", id: "F" }, { x: 4, y: 2, length: 2, direction: "S", id: "G" }, { x: 2, y: 2, length: 2, direction: "N", id: "K" }, { x: 0, y: 0, length: 2, direction: "E", id: "L" }, { x: 3, y: 2, length: 2, direction: "S", id: "J" }], gates: [{ x: 5, y: 4, trigger: "K" }], schema_version: 1, seed: 800, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 0, length: 2, direction: "E", id: "A" }, { x: 1, y: 4, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "D" }, { x: 1, y: 1, length: 2, direction: "N", id: "E" }, { x: 2, y: 5, length: 2, direction: "W", id: "K" }, { x: 4, y: 2, length: 2, direction: "E", id: "B" }, { x: 0, y: 4, length: 2, direction: "S", id: "H" }, { x: 2, y: 1, length: 2, direction: "W", id: "I" }, { x: 1, y: 3, length: 2, direction: "E", id: "J" }, { x: 3, y: 4, length: 2, direction: "E", id: "U" }], gates: [{ x: 5, y: 4, trigger: "K" }], schema_version: 1, seed: 904, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "S", id: "A" }, { x: 3, y: 0, length: 2, direction: "E", id: "K" }, { x: 1, y: 0, length: 2, direction: "E", id: "D" }, { x: 2, y: 5, length: 2, direction: "W", id: "E" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 4, y: 1, length: 2, direction: "W", id: "B" }, { x: 0, y: 1, length: 2, direction: "S", id: "H" }, { x: 4, y: 2, length: 2, direction: "N", id: "L" }], gates: [{ x: 0, y: 5, trigger: "K" }], schema_version: 1, seed: 916, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "C" }, { x: 3, y: 5, length: 2, direction: "E", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "E" }, { x: 5, y: 4, length: 2, direction: "S", id: "F" }, { x: 1, y: 3, length: 2, direction: "W", id: "G" }, { x: 0, y: 2, length: 2, direction: "N", id: "L" }, { x: 4, y: 0, length: 2, direction: "N", id: "I" }, { x: 2, y: 1, length: 2, direction: "W", id: "B" }, { x: 1, y: 4, length: 2, direction: "S", id: "U" }, { x: 3, y: 2, length: 2, direction: "N", id: "V" }], gates: [{ x: 0, y: 1, trigger: "K" }], schema_version: 1, seed: 1056, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "N", id: "A" }, { x: 1, y: 1, length: 2, direction: "W", id: "C" }, { x: 2, y: 4, length: 2, direction: "N", id: "D" }, { x: 3, y: 3, length: 2, direction: "W", id: "B" }, { x: 5, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 1, length: 2, direction: "N", id: "G" }, { x: 4, y: 4, length: 2, direction: "S", id: "K" }, { x: 3, y: 4, length: 2, direction: "S", id: "I" }, { x: 4, y: 1, length: 2, direction: "S", id: "J" }], gates: [{ x: 5, y: 3, trigger: "K" }], schema_version: 1, seed: 1113, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "N", id: "A" }, { x: 3, y: 2, length: 2, direction: "W", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "D" }, { x: 3, y: 4, length: 2, direction: "W", id: "E" }, { x: 3, y: 5, length: 2, direction: "E", id: "F" }, { x: 5, y: 0, length: 2, direction: "S", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "B" }, { x: 1, y: 5, length: 2, direction: "E", id: "I" }, { x: 1, y: 1, length: 2, direction: "E", id: "J" }, { x: 2, y: 0, length: 2, direction: "E", id: "U" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }], gates: [{ x: 5, y: 4, trigger: "K" }], schema_version: 1, seed: 1172, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "S", id: "A" }, { x: 0, y: 5, length: 2, direction: "E", id: "B" }, { x: 2, y: 4, length: 2, direction: "E", id: "D" }, { x: 1, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 2, length: 2, direction: "E", id: "F" }, { x: 4, y: 1, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "H" }, { x: 5, y: 3, length: 2, direction: "S", id: "I" }, { x: 1, y: 3, length: 2, direction: "N", id: "J" }], gates: [{ x: 4, y: 4, trigger: "K" }], schema_version: 1, seed: 1301, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 1, length: 2, direction: "S", id: "K" }, { x: 1, y: 0, length: 2, direction: "W", id: "C" }, { x: 4, y: 0, length: 2, direction: "N", id: "D" }, { x: 0, y: 3, length: 2, direction: "N", id: "L" }, { x: 4, y: 5, length: 2, direction: "E", id: "F" }, { x: 3, y: 2, length: 2, direction: "E", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "H" }, { x: 3, y: 3, length: 2, direction: "S", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "B" }], gates: [{ x: 2, y: 4, trigger: "K" }], schema_version: 1, seed: 1341, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "W", id: "A" }, { x: 2, y: 5, length: 2, direction: "W", id: "C" }, { x: 4, y: 1, length: 2, direction: "W", id: "D" }, { x: 1, y: 3, length: 2, direction: "W", id: "E" }, { x: 1, y: 2, length: 2, direction: "W", id: "F" }, { x: 3, y: 2, length: 2, direction: "S", id: "G" }, { x: 1, y: 4, length: 2, direction: "S", id: "H" }, { x: 5, y: 2, length: 2, direction: "S", id: "L" }, { x: 0, y: 0, length: 2, direction: "S", id: "J" }, { x: 1, y: 0, length: 2, direction: "S", id: "K" }, { x: 4, y: 5, length: 2, direction: "W", id: "B" }], gates: [{ x: 0, y: 4, trigger: "K" }], schema_version: 1, seed: 1365, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 0, length: 2, direction: "W", id: "K" }, { x: 3, y: 2, length: 2, direction: "N", id: "L" }, { x: 5, y: 4, length: 2, direction: "S", id: "D" }, { x: 1, y: 2, length: 2, direction: "S", id: "E" }, { x: 4, y: 1, length: 2, direction: "S", id: "F" }, { x: 0, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "B" }, { x: 2, y: 2, length: 2, direction: "S", id: "I" }, { x: 5, y: 1, length: 2, direction: "N", id: "J" }], gates: [{ x: 4, y: 3, trigger: "K" }], schema_version: 1, seed: 1393, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 1, length: 2, direction: "S", id: "A" }, { x: 4, y: 5, length: 2, direction: "E", id: "K" }, { x: 0, y: 1, length: 2, direction: "N", id: "D" }, { x: 2, y: 4, length: 2, direction: "N", id: "E" }, { x: 4, y: 3, length: 2, direction: "E", id: "F" }, { x: 2, y: 0, length: 2, direction: "W", id: "B" }, { x: 4, y: 4, length: 2, direction: "W", id: "L" }, { x: 4, y: 0, length: 2, direction: "E", id: "I" }, { x: 3, y: 1, length: 2, direction: "W", id: "J" }], gates: [{ x: 1, y: 4, trigger: "K" }], schema_version: 1, seed: 1413, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "S", id: "A" }, { x: 5, y: 0, length: 2, direction: "S", id: "C" }, { x: 2, y: 0, length: 2, direction: "E", id: "D" }, { x: 0, y: 1, length: 2, direction: "E", id: "E" }, { x: 0, y: 2, length: 2, direction: "S", id: "B" }, { x: 0, y: 4, length: 2, direction: "W", id: "L" }, { x: 1, y: 2, length: 2, direction: "W", id: "K" }, { x: 2, y: 3, length: 2, direction: "S", id: "I" }], gates: [{ x: 4, y: 3, trigger: "K" }], schema_version: 1, seed: 1513, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "N", id: "A" }, { x: 1, y: 3, length: 2, direction: "E", id: "C" }, { x: 1, y: 0, length: 2, direction: "N", id: "D" }, { x: 3, y: 0, length: 2, direction: "E", id: "L" }, { x: 5, y: 3, length: 2, direction: "N", id: "F" }, { x: 0, y: 4, length: 2, direction: "W", id: "G" }, { x: 4, y: 5, length: 2, direction: "W", id: "K" }, { x: 4, y: 3, length: 2, direction: "N", id: "B" }], gates: [{ x: 4, y: 1, trigger: "K" }], schema_version: 1, seed: 1553, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "E", id: "A" }, { x: 2, y: 3, length: 2, direction: "W", id: "C" }, { x: 2, y: 1, length: 2, direction: "N", id: "D" }, { x: 4, y: 4, length: 2, direction: "W", id: "L" }, { x: 0, y: 4, length: 2, direction: "S", id: "B" }, { x: 5, y: 2, length: 2, direction: "N", id: "G" }, { x: 0, y: 2, length: 2, direction: "N", id: "H" }, { x: 2, y: 5, length: 2, direction: "E", id: "I" }, { x: 1, y: 0, length: 2, direction: "S", id: "K" }], gates: [{ x: 1, y: 4, trigger: "K" }], schema_version: 1, seed: 1569, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 0, length: 2, direction: "E", id: "L" }, { x: 2, y: 4, length: 2, direction: "N", id: "C" }, { x: 0, y: 3, length: 2, direction: "S", id: "D" }, { x: 3, y: 1, length: 2, direction: "E", id: "E" }, { x: 5, y: 0, length: 2, direction: "S", id: "B" }, { x: 1, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 3, length: 2, direction: "W", id: "H" }, { x: 3, y: 2, length: 2, direction: "E", id: "K" }, { x: 3, y: 4, length: 2, direction: "E", id: "J" }], gates: [{ x: 4, y: 0, trigger: "K" }], schema_version: 1, seed: 1597, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "E", id: "B" }, { x: 3, y: 0, length: 2, direction: "S", id: "C" }, { x: 1, y: 4, length: 2, direction: "N", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "E" }, { x: 4, y: 0, length: 2, direction: "N", id: "F" }, { x: 3, y: 2, length: 2, direction: "S", id: "K" }, { x: 3, y: 4, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "N", id: "I" }], gates: [{ x: 1, y: 3, trigger: "K" }], schema_version: 1, seed: 1667, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "S", id: "L" }, { x: 4, y: 0, length: 2, direction: "N", id: "K" }, { x: 0, y: 1, length: 2, direction: "S", id: "D" }, { x: 0, y: 3, length: 2, direction: "W", id: "E" }, { x: 2, y: 2, length: 2, direction: "S", id: "F" }, { x: 0, y: 5, length: 2, direction: "E", id: "B" }, { x: 1, y: 0, length: 2, direction: "N", id: "H" }, { x: 2, y: 1, length: 2, direction: "W", id: "I" }, { x: 5, y: 4, length: 2, direction: "N", id: "J" }], gates: [{ x: 3, y: 5, trigger: "K" }], schema_version: 1, seed: 1680, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "K" }, { x: 3, y: 5, length: 2, direction: "E", id: "B" }, { x: 2, y: 4, length: 2, direction: "S", id: "D" }, { x: 4, y: 2, length: 2, direction: "W", id: "E" }, { x: 3, y: 1, length: 2, direction: "S", id: "F" }, { x: 2, y: 3, length: 2, direction: "W", id: "G" }, { x: 4, y: 4, length: 2, direction: "W", id: "L" }, { x: 4, y: 1, length: 2, direction: "E", id: "I" }, { x: 1, y: 4, length: 2, direction: "N", id: "J" }], gates: [{ x: 5, y: 5, trigger: "K" }], schema_version: 1, seed: 1720, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 3, length: 2, direction: "S", id: "C" }, { x: 1, y: 1, length: 2, direction: "W", id: "L" }, { x: 0, y: 2, length: 2, direction: "E", id: "E" }, { x: 5, y: 2, length: 2, direction: "S", id: "F" }, { x: 0, y: 3, length: 2, direction: "S", id: "G" }, { x: 3, y: 2, length: 2, direction: "S", id: "B" }, { x: 4, y: 4, length: 2, direction: "E", id: "I" }], gates: [{ x: 0, y: 1, trigger: "K" }], schema_version: 1, seed: 1763, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "S", id: "A" }, { x: 0, y: 4, length: 2, direction: "W", id: "C" }, { x: 4, y: 4, length: 2, direction: "S", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "B" }, { x: 2, y: 4, length: 2, direction: "E", id: "F" }, { x: 4, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "H" }, { x: 3, y: 3, length: 2, direction: "E", id: "I" }, { x: 2, y: 2, length: 2, direction: "N", id: "J" }, { x: 0, y: 1, length: 2, direction: "S", id: "L" }, { x: 2, y: 0, length: 2, direction: "E", id: "K" }], gates: [{ x: 5, y: 5, trigger: "K" }], schema_version: 1, seed: 1781, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "E", id: "A" }, { x: 4, y: 4, length: 2, direction: "W", id: "L" }, { x: 2, y: 3, length: 2, direction: "W", id: "D" }, { x: 4, y: 2, length: 2, direction: "E", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "F" }, { x: 0, y: 3, length: 2, direction: "S", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "H" }, { x: 4, y: 1, length: 2, direction: "E", id: "K" }, { x: 0, y: 0, length: 2, direction: "W", id: "J" }, { x: 2, y: 2, length: 2, direction: "E", id: "U" }, { x: 0, y: 2, length: 2, direction: "E", id: "V" }], gates: [{ x: 3, y: 4, trigger: "K" }], schema_version: 1, seed: 1811, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 2, length: 2, direction: "N", id: "A" }, { x: 2, y: 5, length: 2, direction: "E", id: "C" }, { x: 1, y: 1, length: 2, direction: "W", id: "L" }, { x: 1, y: 0, length: 2, direction: "W", id: "E" }, { x: 3, y: 0, length: 2, direction: "E", id: "F" }, { x: 1, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 4, length: 2, direction: "W", id: "H" }, { x: 2, y: 2, length: 2, direction: "N", id: "I" }, { x: 5, y: 1, length: 2, direction: "S", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "B" }], gates: [{ x: 0, y: 1, trigger: "K" }], schema_version: 1, seed: 1892, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "W", id: "A" }, { x: 0, y: 4, length: 2, direction: "W", id: "B" }, { x: 4, y: 3, length: 2, direction: "W", id: "D" }, { x: 0, y: 1, length: 2, direction: "S", id: "K" }, { x: 4, y: 5, length: 2, direction: "E", id: "F" }, { x: 4, y: 4, length: 2, direction: "E", id: "G" }, { x: 3, y: 0, length: 2, direction: "E", id: "H" }, { x: 3, y: 2, length: 2, direction: "S", id: "I" }, { x: 2, y: 5, length: 2, direction: "W", id: "L" }, { x: 1, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 3, y: 4, trigger: "K" }], schema_version: 1, seed: 1979, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "A" }, { x: 1, y: 0, length: 2, direction: "E", id: "L" }, { x: 3, y: 2, length: 2, direction: "E", id: "D" }, { x: 4, y: 3, length: 2, direction: "W", id: "E" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 3, y: 1, length: 2, direction: "E", id: "G" }, { x: 1, y: 3, length: 2, direction: "S", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "I" }, { x: 0, y: 2, length: 2, direction: "W", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "B" }, { x: 5, y: 4, length: 2, direction: "S", id: "K" }], gates: [{ x: 5, y: 0, trigger: "K" }], schema_version: 1, seed: 2024, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "W", id: "B" }, { x: 0, y: 1, length: 2, direction: "S", id: "C" }, { x: 4, y: 4, length: 2, direction: "S", id: "D" }, { x: 2, y: 1, length: 2, direction: "S", id: "K" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 5, y: 2, length: 2, direction: "N", id: "G" }, { x: 0, y: 5, length: 2, direction: "E", id: "H" }, { x: 5, y: 4, length: 2, direction: "S", id: "L" }], gates: [{ x: 0, y: 4, trigger: "K" }], schema_version: 1, seed: 2044, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 4, length: 2, direction: "W", id: "A" }, { x: 1, y: 0, length: 2, direction: "W", id: "L" }, { x: 4, y: 1, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "N", id: "K" }, { x: 4, y: 4, length: 2, direction: "N", id: "F" }, { x: 2, y: 2, length: 2, direction: "N", id: "G" }, { x: 5, y: 3, length: 2, direction: "S", id: "H" }, { x: 4, y: 0, length: 2, direction: "W", id: "I" }, { x: 2, y: 4, length: 2, direction: "N", id: "J" }, { x: 1, y: 1, length: 2, direction: "S", id: "U" }], gates: [{ x: 2, y: 1, trigger: "K" }], schema_version: 1, seed: 2055, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 0, length: 2, direction: "E", id: "A" }, { x: 0, y: 3, length: 2, direction: "W", id: "B" }, { x: 0, y: 1, length: 2, direction: "S", id: "D" }, { x: 4, y: 1, length: 2, direction: "S", id: "L" }, { x: 3, y: 3, length: 2, direction: "N", id: "F" }, { x: 5, y: 4, length: 2, direction: "N", id: "G" }, { x: 1, y: 1, length: 2, direction: "S", id: "H" }, { x: 1, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 4, length: 2, direction: "N", id: "J" }, { x: 2, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 5, y: 1, trigger: "K" }], schema_version: 1, seed: 2072, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 0, length: 2, direction: "W", id: "A" }, { x: 0, y: 3, length: 2, direction: "E", id: "C" }, { x: 0, y: 4, length: 2, direction: "E", id: "K" }, { x: 3, y: 2, length: 2, direction: "N", id: "E" }, { x: 3, y: 1, length: 2, direction: "E", id: "B" }, { x: 4, y: 3, length: 2, direction: "N", id: "G" }, { x: 5, y: 4, length: 2, direction: "S", id: "L" }, { x: 3, y: 5, length: 2, direction: "W", id: "I" }, { x: 2, y: 4, length: 2, direction: "N", id: "J" }], gates: [{ x: 0, y: 5, trigger: "K" }], schema_version: 1, seed: 2191, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 0, length: 2, direction: "W", id: "A" }, { x: 3, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 2, length: 2, direction: "N", id: "D" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }, { x: 2, y: 1, length: 2, direction: "E", id: "F" }, { x: 5, y: 1, length: 2, direction: "N", id: "G" }, { x: 5, y: 3, length: 2, direction: "S", id: "B" }, { x: 1, y: 2, length: 2, direction: "N", id: "I" }, { x: 0, y: 4, length: 2, direction: "E", id: "J" }, { x: 0, y: 1, length: 2, direction: "N", id: "U" }, { x: 3, y: 0, length: 2, direction: "E", id: "V" }], gates: [{ x: 5, y: 0, trigger: "K" }], schema_version: 1, seed: 2303, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 2, length: 2, direction: "E", id: "A" }, { x: 2, y: 0, length: 2, direction: "S", id: "C" }, { x: 4, y: 4, length: 2, direction: "W", id: "D" }, { x: 3, y: 0, length: 2, direction: "E", id: "B" }, { x: 0, y: 2, length: 2, direction: "W", id: "F" }, { x: 4, y: 5, length: 2, direction: "E", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "K" }, { x: 0, y: 0, length: 2, direction: "E", id: "I" }], gates: [{ x: 2, y: 3, trigger: "K" }], schema_version: 1, seed: 2385, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 0, length: 2, direction: "S", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 0, length: 2, direction: "S", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "E" }, { x: 3, y: 1, length: 2, direction: "S", id: "F" }, { x: 4, y: 4, length: 2, direction: "E", id: "G" }, { x: 1, y: 5, length: 2, direction: "E", id: "H" }, { x: 5, y: 0, length: 2, direction: "N", id: "I" }, { x: 2, y: 4, length: 2, direction: "W", id: "B" }, { x: 4, y: 2, length: 2, direction: "N", id: "K" }], gates: [{ x: 0, y: 5, trigger: "K" }], schema_version: 1, seed: 2404, solution: [], level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }], normal: [{ width: 6, height: 6, cars: [{ x: 1, y: 0, length: 2, direction: "S", id: "A" }, { x: 2, y: 0, length: 2, direction: "E", id: "C" }, { x: 1, y: 5, length: 2, direction: "W", id: "D" }, { x: 4, y: 2, length: 2, direction: "N", id: "L" }, { x: 3, y: 4, length: 2, direction: "S", id: "F" }, { x: 5, y: 2, length: 2, direction: "N", id: "G" }, { x: 0, y: 4, length: 2, direction: "N", id: "K" }, { x: 1, y: 4, length: 2, direction: "E", id: "B" }], gates: [{ x: 4, y: 0, trigger: "K" }, { x: 5, y: 4, trigger: "L" }], schema_version: 1, seed: 86, solution: [], boss: { id: "B", after: ["C", "F", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "W", id: "A" }, { x: 5, y: 0, length: 2, direction: "S", id: "L" }, { x: 1, y: 3, length: 2, direction: "S", id: "D" }, { x: 3, y: 1, length: 2, direction: "W", id: "E" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 4, y: 4, length: 2, direction: "E", id: "K" }, { x: 2, y: 3, length: 2, direction: "E", id: "H" }, { x: 1, y: 1, length: 2, direction: "S", id: "I" }, { x: 0, y: 2, length: 2, direction: "N", id: "B" }, { x: 2, y: 0, length: 2, direction: "W", id: "U" }], gates: [{ x: 2, y: 1, trigger: "K" }, { x: 0, y: 1, trigger: "L" }], schema_version: 1, seed: 216, solution: [], boss: { id: "B", after: ["D", "E", "F", "H", "I", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 3, length: 2, direction: "E", id: "A" }, { x: 4, y: 2, length: 2, direction: "E", id: "C" }, { x: 2, y: 3, length: 2, direction: "N", id: "D" }, { x: 5, y: 4, length: 2, direction: "N", id: "L" }, { x: 0, y: 4, length: 2, direction: "N", id: "F" }, { x: 3, y: 1, length: 2, direction: "S", id: "G" }, { x: 4, y: 0, length: 2, direction: "W", id: "B" }, { x: 1, y: 3, length: 2, direction: "N", id: "I" }, { x: 1, y: 2, length: 2, direction: "E", id: "K" }], gates: [{ x: 3, y: 0, trigger: "K" }, { x: 1, y: 1, trigger: "L" }], schema_version: 1, seed: 229, solution: [], boss: { id: "B", after: ["A", "C", "F", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "N", id: "A" }, { x: 2, y: 4, length: 2, direction: "S", id: "C" }, { x: 3, y: 4, length: 2, direction: "W", id: "D" }, { x: 0, y: 4, length: 2, direction: "S", id: "B" }, { x: 0, y: 3, length: 2, direction: "E", id: "L" }, { x: 5, y: 1, length: 2, direction: "N", id: "G" }, { x: 0, y: 1, length: 2, direction: "E", id: "H" }, { x: 3, y: 0, length: 2, direction: "W", id: "I" }, { x: 3, y: 5, length: 2, direction: "E", id: "K" }, { x: 1, y: 4, length: 2, direction: "S", id: "U" }, { x: 3, y: 2, length: 2, direction: "N", id: "V" }], gates: [{ x: 1, y: 0, trigger: "K" }, { x: 5, y: 5, trigger: "L" }], schema_version: 1, seed: 289, solution: [], boss: { id: "B", after: ["A", "C", "G", "H", "I", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "S", id: "A" }, { x: 2, y: 3, length: 2, direction: "E", id: "C" }, { x: 2, y: 0, length: 2, direction: "W", id: "D" }, { x: 1, y: 0, length: 2, direction: "S", id: "B" }, { x: 4, y: 3, length: 2, direction: "E", id: "F" }, { x: 4, y: 0, length: 2, direction: "N", id: "G" }, { x: 3, y: 1, length: 2, direction: "S", id: "H" }, { x: 1, y: 4, length: 2, direction: "W", id: "I" }, { x: 2, y: 5, length: 2, direction: "E", id: "L" }, { x: 0, y: 0, length: 2, direction: "N", id: "K" }, { x: 0, y: 2, length: 2, direction: "S", id: "V" }], gates: [{ x: 5, y: 5, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 400, solution: [], boss: { id: "B", after: ["A", "C", "F", "G", "H", "I", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "E", id: "A" }, { x: 0, y: 1, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "S", id: "D" }, { x: 1, y: 2, length: 2, direction: "S", id: "E" }, { x: 2, y: 1, length: 2, direction: "W", id: "F" }, { x: 4, y: 1, length: 2, direction: "E", id: "G" }, { x: 5, y: 4, length: 2, direction: "N", id: "L" }, { x: 3, y: 4, length: 2, direction: "E", id: "I" }, { x: 4, y: 2, length: 2, direction: "N", id: "K" }], gates: [{ x: 3, y: 5, trigger: "K" }, { x: 1, y: 4, trigger: "L" }], schema_version: 1, seed: 402, solution: [], boss: { id: "B", after: ["A", "D", "E", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "S", id: "L" }, { x: 4, y: 5, length: 2, direction: "W", id: "K" }, { x: 0, y: 1, length: 2, direction: "S", id: "D" }, { x: 4, y: 2, length: 2, direction: "E", id: "E" }, { x: 3, y: 0, length: 2, direction: "N", id: "F" }, { x: 1, y: 4, length: 2, direction: "N", id: "B" }, { x: 4, y: 0, length: 2, direction: "N", id: "H" }, { x: 4, y: 3, length: 2, direction: "E", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "J" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 1, y: 3, trigger: "L" }], schema_version: 1, seed: 443, solution: [], boss: { id: "B", after: ["E", "F", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "A" }, { x: 2, y: 2, length: 2, direction: "N", id: "C" }, { x: 4, y: 0, length: 2, direction: "N", id: "B" }, { x: 5, y: 2, length: 2, direction: "N", id: "L" }, { x: 4, y: 3, length: 2, direction: "N", id: "F" }, { x: 2, y: 0, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "K" }, { x: 1, y: 4, length: 2, direction: "E", id: "I" }, { x: 5, y: 0, length: 2, direction: "N", id: "J" }], gates: [{ x: 1, y: 0, trigger: "K" }, { x: 1, y: 5, trigger: "L" }], schema_version: 1, seed: 446, solution: [], boss: { id: "B", after: ["A", "C", "G", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 0, length: 2, direction: "E", id: "A" }, { x: 5, y: 4, length: 2, direction: "S", id: "C" }, { x: 4, y: 1, length: 2, direction: "E", id: "K" }, { x: 1, y: 1, length: 2, direction: "N", id: "L" }, { x: 3, y: 4, length: 2, direction: "W", id: "F" }, { x: 2, y: 2, length: 2, direction: "W", id: "G" }, { x: 0, y: 3, length: 2, direction: "N", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "I" }, { x: 2, y: 3, length: 2, direction: "W", id: "B" }, { x: 2, y: 0, length: 2, direction: "S", id: "U" }], gates: [{ x: 0, y: 2, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 659, solution: [], boss: { id: "B", after: ["A", "C", "F", "G", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "N", id: "B" }, { x: 5, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 4, length: 2, direction: "N", id: "D" }, { x: 1, y: 2, length: 2, direction: "N", id: "E" }, { x: 3, y: 3, length: 2, direction: "N", id: "K" }, { x: 3, y: 1, length: 2, direction: "E", id: "G" }, { x: 1, y: 1, length: 2, direction: "W", id: "H" }, { x: 2, y: 3, length: 2, direction: "N", id: "I" }, { x: 4, y: 2, length: 2, direction: "S", id: "J" }], gates: [{ x: 4, y: 4, trigger: "K" }, { x: 2, y: 2, trigger: "L" }], schema_version: 1, seed: 743, solution: [], boss: { id: "B", after: ["E", "G", "H", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "E", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "K" }, { x: 5, y: 2, length: 2, direction: "S", id: "D" }, { x: 3, y: 2, length: 2, direction: "N", id: "E" }, { x: 1, y: 4, length: 2, direction: "S", id: "F" }, { x: 2, y: 3, length: 2, direction: "S", id: "G" }, { x: 0, y: 0, length: 2, direction: "E", id: "H" }, { x: 4, y: 1, length: 2, direction: "S", id: "I" }, { x: 3, y: 5, length: 2, direction: "W", id: "L" }, { x: 4, y: 3, length: 2, direction: "S", id: "B" }], gates: [{ x: 2, y: 5, trigger: "K" }, { x: 3, y: 1, trigger: "L" }], schema_version: 1, seed: 766, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "E", id: "B" }, { x: 1, y: 1, length: 2, direction: "N", id: "C" }, { x: 3, y: 0, length: 2, direction: "N", id: "D" }, { x: 5, y: 0, length: 2, direction: "S", id: "E" }, { x: 1, y: 4, length: 2, direction: "S", id: "F" }, { x: 4, y: 2, length: 2, direction: "S", id: "G" }, { x: 2, y: 2, length: 2, direction: "N", id: "K" }, { x: 0, y: 0, length: 2, direction: "E", id: "L" }, { x: 3, y: 2, length: 2, direction: "S", id: "J" }], gates: [{ x: 5, y: 4, trigger: "K" }, { x: 2, y: 1, trigger: "L" }], schema_version: 1, seed: 800, solution: [], boss: { id: "B", after: ["D", "E", "F"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "C" }, { x: 3, y: 5, length: 2, direction: "E", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "E" }, { x: 5, y: 4, length: 2, direction: "S", id: "F" }, { x: 1, y: 3, length: 2, direction: "W", id: "G" }, { x: 0, y: 2, length: 2, direction: "N", id: "L" }, { x: 4, y: 0, length: 2, direction: "N", id: "I" }, { x: 2, y: 1, length: 2, direction: "W", id: "B" }, { x: 1, y: 4, length: 2, direction: "S", id: "U" }, { x: 3, y: 2, length: 2, direction: "N", id: "V" }], gates: [{ x: 0, y: 1, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 1056, solution: [], boss: { id: "B", after: ["C", "D", "E", "F", "G", "I", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "N", id: "A" }, { x: 1, y: 1, length: 2, direction: "W", id: "C" }, { x: 2, y: 4, length: 2, direction: "N", id: "D" }, { x: 3, y: 3, length: 2, direction: "W", id: "B" }, { x: 5, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 1, length: 2, direction: "N", id: "G" }, { x: 4, y: 4, length: 2, direction: "S", id: "K" }, { x: 3, y: 4, length: 2, direction: "S", id: "I" }, { x: 4, y: 1, length: 2, direction: "S", id: "J" }], gates: [{ x: 5, y: 3, trigger: "K" }, { x: 2, y: 0, trigger: "L" }], schema_version: 1, seed: 1113, solution: [], boss: { id: "B", after: ["A", "C", "D", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "N", id: "A" }, { x: 3, y: 2, length: 2, direction: "W", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "D" }, { x: 3, y: 4, length: 2, direction: "W", id: "E" }, { x: 3, y: 5, length: 2, direction: "E", id: "F" }, { x: 5, y: 0, length: 2, direction: "S", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "B" }, { x: 1, y: 5, length: 2, direction: "E", id: "I" }, { x: 1, y: 1, length: 2, direction: "E", id: "J" }, { x: 2, y: 0, length: 2, direction: "E", id: "U" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }], gates: [{ x: 5, y: 4, trigger: "K" }, { x: 2, y: 2, trigger: "L" }], schema_version: 1, seed: 1172, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "S", id: "A" }, { x: 0, y: 5, length: 2, direction: "E", id: "B" }, { x: 2, y: 4, length: 2, direction: "E", id: "D" }, { x: 1, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 2, length: 2, direction: "E", id: "F" }, { x: 4, y: 1, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "H" }, { x: 5, y: 3, length: 2, direction: "S", id: "I" }, { x: 1, y: 3, length: 2, direction: "N", id: "J" }], gates: [{ x: 4, y: 4, trigger: "K" }, { x: 5, y: 5, trigger: "L" }], schema_version: 1, seed: 1301, solution: [], boss: { id: "B", after: ["D", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 1, length: 2, direction: "S", id: "K" }, { x: 1, y: 0, length: 2, direction: "W", id: "C" }, { x: 4, y: 0, length: 2, direction: "N", id: "D" }, { x: 0, y: 3, length: 2, direction: "N", id: "L" }, { x: 4, y: 5, length: 2, direction: "E", id: "F" }, { x: 3, y: 2, length: 2, direction: "E", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "H" }, { x: 3, y: 3, length: 2, direction: "S", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "B" }], gates: [{ x: 2, y: 4, trigger: "K" }, { x: 3, y: 5, trigger: "L" }], schema_version: 1, seed: 1341, solution: [], boss: { id: "B", after: ["C", "D", "F", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 0, length: 2, direction: "W", id: "K" }, { x: 3, y: 2, length: 2, direction: "N", id: "L" }, { x: 5, y: 4, length: 2, direction: "S", id: "D" }, { x: 1, y: 2, length: 2, direction: "S", id: "E" }, { x: 4, y: 1, length: 2, direction: "S", id: "F" }, { x: 0, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "B" }, { x: 2, y: 2, length: 2, direction: "S", id: "I" }, { x: 5, y: 1, length: 2, direction: "N", id: "J" }], gates: [{ x: 4, y: 3, trigger: "K" }, { x: 1, y: 0, trigger: "L" }], schema_version: 1, seed: 1393, solution: [], boss: { id: "B", after: ["D", "E", "F", "G", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "N", id: "A" }, { x: 1, y: 3, length: 2, direction: "E", id: "C" }, { x: 1, y: 0, length: 2, direction: "N", id: "D" }, { x: 3, y: 0, length: 2, direction: "E", id: "L" }, { x: 5, y: 3, length: 2, direction: "N", id: "F" }, { x: 0, y: 4, length: 2, direction: "W", id: "G" }, { x: 4, y: 5, length: 2, direction: "W", id: "K" }, { x: 4, y: 3, length: 2, direction: "N", id: "B" }], gates: [{ x: 4, y: 1, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 1553, solution: [], boss: { id: "B", after: ["A", "D", "F", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "K" }, { x: 3, y: 5, length: 2, direction: "E", id: "B" }, { x: 2, y: 4, length: 2, direction: "S", id: "D" }, { x: 4, y: 2, length: 2, direction: "W", id: "E" }, { x: 3, y: 1, length: 2, direction: "S", id: "F" }, { x: 2, y: 3, length: 2, direction: "W", id: "G" }, { x: 4, y: 4, length: 2, direction: "W", id: "L" }, { x: 4, y: 1, length: 2, direction: "E", id: "I" }, { x: 1, y: 4, length: 2, direction: "N", id: "J" }], gates: [{ x: 5, y: 5, trigger: "K" }, { x: 2, y: 2, trigger: "L" }], schema_version: 1, seed: 1720, solution: [], boss: { id: "B", after: ["D", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 3, length: 2, direction: "S", id: "C" }, { x: 1, y: 1, length: 2, direction: "W", id: "L" }, { x: 0, y: 2, length: 2, direction: "E", id: "E" }, { x: 5, y: 2, length: 2, direction: "S", id: "F" }, { x: 0, y: 3, length: 2, direction: "S", id: "G" }, { x: 3, y: 2, length: 2, direction: "S", id: "B" }, { x: 4, y: 4, length: 2, direction: "E", id: "I" }], gates: [{ x: 0, y: 1, trigger: "K" }, { x: 3, y: 5, trigger: "L" }], schema_version: 1, seed: 1763, solution: [], boss: { id: "B", after: ["C", "F", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "S", id: "A" }, { x: 0, y: 4, length: 2, direction: "W", id: "C" }, { x: 4, y: 4, length: 2, direction: "S", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "B" }, { x: 2, y: 4, length: 2, direction: "E", id: "F" }, { x: 4, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "H" }, { x: 3, y: 3, length: 2, direction: "E", id: "I" }, { x: 2, y: 2, length: 2, direction: "N", id: "J" }, { x: 0, y: 1, length: 2, direction: "S", id: "L" }, { x: 2, y: 0, length: 2, direction: "E", id: "K" }], gates: [{ x: 5, y: 5, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 1781, solution: [], boss: { id: "B", after: ["C", "D", "F", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 2, length: 2, direction: "N", id: "A" }, { x: 2, y: 5, length: 2, direction: "E", id: "C" }, { x: 1, y: 1, length: 2, direction: "W", id: "L" }, { x: 1, y: 0, length: 2, direction: "W", id: "E" }, { x: 3, y: 0, length: 2, direction: "E", id: "F" }, { x: 1, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 4, length: 2, direction: "W", id: "H" }, { x: 2, y: 2, length: 2, direction: "N", id: "I" }, { x: 5, y: 1, length: 2, direction: "S", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "B" }], gates: [{ x: 0, y: 1, trigger: "K" }, { x: 4, y: 5, trigger: "L" }], schema_version: 1, seed: 1892, solution: [], boss: { id: "B", after: ["A", "C", "E", "F", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "W", id: "A" }, { x: 1, y: 0, length: 2, direction: "E", id: "L" }, { x: 3, y: 2, length: 2, direction: "E", id: "D" }, { x: 4, y: 3, length: 2, direction: "W", id: "E" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 3, y: 1, length: 2, direction: "E", id: "G" }, { x: 1, y: 3, length: 2, direction: "S", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "I" }, { x: 0, y: 2, length: 2, direction: "W", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "B" }, { x: 5, y: 4, length: 2, direction: "S", id: "K" }], gates: [{ x: 5, y: 0, trigger: "K" }, { x: 0, y: 3, trigger: "L" }], schema_version: 1, seed: 2024, solution: [], boss: { id: "B", after: ["A", "D", "E", "G", "H", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 3, length: 2, direction: "W", id: "B" }, { x: 0, y: 1, length: 2, direction: "S", id: "C" }, { x: 4, y: 4, length: 2, direction: "S", id: "D" }, { x: 2, y: 1, length: 2, direction: "S", id: "K" }, { x: 2, y: 4, length: 2, direction: "W", id: "F" }, { x: 5, y: 2, length: 2, direction: "N", id: "G" }, { x: 0, y: 5, length: 2, direction: "E", id: "H" }, { x: 5, y: 4, length: 2, direction: "S", id: "L" }], gates: [{ x: 0, y: 4, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 2044, solution: [], boss: { id: "B", after: ["D", "F", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 4, length: 2, direction: "N", id: "A" }, { x: 2, y: 0, length: 2, direction: "S", id: "C" }, { x: 3, y: 4, length: 2, direction: "S", id: "D" }, { x: 0, y: 0, length: 2, direction: "N", id: "E" }, { x: 4, y: 1, length: 2, direction: "N", id: "F" }, { x: 2, y: 2, length: 2, direction: "E", id: "B" }, { x: 0, y: 2, length: 2, direction: "S", id: "H" }, { x: 1, y: 3, length: 2, direction: "E", id: "L" }, { x: 2, y: 4, length: 2, direction: "S", id: "J" }, { x: 3, y: 3, length: 2, direction: "E", id: "U" }, { x: 4, y: 0, length: 2, direction: "E", id: "K" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 5, y: 3, trigger: "L" }], schema_version: 1, seed: 2196, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "H", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 0, length: 2, direction: "W", id: "A" }, { x: 3, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 2, length: 2, direction: "N", id: "D" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }, { x: 2, y: 1, length: 2, direction: "E", id: "F" }, { x: 5, y: 1, length: 2, direction: "N", id: "G" }, { x: 5, y: 3, length: 2, direction: "S", id: "B" }, { x: 1, y: 2, length: 2, direction: "N", id: "I" }, { x: 0, y: 4, length: 2, direction: "E", id: "J" }, { x: 0, y: 1, length: 2, direction: "N", id: "U" }, { x: 3, y: 0, length: 2, direction: "E", id: "V" }], gates: [{ x: 5, y: 0, trigger: "K" }, { x: 2, y: 4, trigger: "L" }], schema_version: 1, seed: 2303, solution: [], boss: { id: "B", after: ["A", "D", "F", "G", "I", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "N", id: "A" }, { x: 4, y: 1, length: 2, direction: "N", id: "B" }, { x: 0, y: 4, length: 2, direction: "N", id: "L" }, { x: 3, y: 3, length: 2, direction: "E", id: "E" }, { x: 4, y: 4, length: 2, direction: "W", id: "F" }, { x: 0, y: 1, length: 2, direction: "N", id: "G" }, { x: 2, y: 5, length: 2, direction: "W", id: "H" }, { x: 2, y: 1, length: 2, direction: "E", id: "I" }, { x: 2, y: 0, length: 2, direction: "W", id: "K" }], gates: [{ x: 3, y: 4, trigger: "K" }, { x: 1, y: 1, trigger: "L" }], schema_version: 1, seed: 2445, solution: [], boss: { id: "B", after: ["A", "E", "F", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 4, length: 2, direction: "N", id: "A" }, { x: 3, y: 4, length: 2, direction: "N", id: "C" }, { x: 1, y: 5, length: 2, direction: "E", id: "L" }, { x: 3, y: 1, length: 2, direction: "N", id: "K" }, { x: 0, y: 2, length: 2, direction: "E", id: "B" }, { x: 4, y: 3, length: 2, direction: "E", id: "G" }, { x: 2, y: 2, length: 2, direction: "N", id: "H" }, { x: 5, y: 0, length: 2, direction: "N", id: "I" }], gates: [{ x: 2, y: 0, trigger: "K" }, { x: 5, y: 2, trigger: "L" }], schema_version: 1, seed: 2455, solution: [], boss: { id: "B", after: ["C", "G", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 3, length: 2, direction: "S", id: "A" }, { x: 1, y: 5, length: 2, direction: "W", id: "K" }, { x: 0, y: 0, length: 2, direction: "S", id: "B" }, { x: 1, y: 2, length: 2, direction: "W", id: "E" }, { x: 2, y: 0, length: 2, direction: "W", id: "F" }, { x: 4, y: 0, length: 2, direction: "S", id: "L" }, { x: 0, y: 4, length: 2, direction: "W", id: "H" }, { x: 5, y: 4, length: 2, direction: "N", id: "I" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 5, y: 2, trigger: "L" }], schema_version: 1, seed: 2458, solution: [], boss: { id: "B", after: ["A", "E", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 1, length: 2, direction: "S", id: "A" }, { x: 1, y: 4, length: 2, direction: "W", id: "C" }, { x: 3, y: 3, length: 2, direction: "N", id: "L" }, { x: 2, y: 2, length: 2, direction: "E", id: "E" }, { x: 0, y: 3, length: 2, direction: "N", id: "B" }, { x: 1, y: 1, length: 2, direction: "N", id: "G" }, { x: 4, y: 4, length: 2, direction: "N", id: "H" }, { x: 0, y: 0, length: 2, direction: "N", id: "K" }], gates: [{ x: 3, y: 1, trigger: "K" }, { x: 4, y: 1, trigger: "L" }], schema_version: 1, seed: 2474, solution: [], boss: { id: "B", after: ["A", "E", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "W", id: "A" }, { x: 3, y: 5, length: 2, direction: "W", id: "C" }, { x: 4, y: 3, length: 2, direction: "E", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "E" }, { x: 3, y: 4, length: 2, direction: "E", id: "F" }, { x: 5, y: 1, length: 2, direction: "S", id: "G" }, { x: 4, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 3, length: 2, direction: "W", id: "I" }, { x: 1, y: 4, length: 2, direction: "S", id: "B" }, { x: 3, y: 0, length: 2, direction: "S", id: "U" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 5, y: 5, trigger: "L" }], schema_version: 1, seed: 2506, solution: [], boss: { id: "B", after: ["A", "E", "F", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "E", id: "A" }, { x: 3, y: 5, length: 2, direction: "W", id: "C" }, { x: 1, y: 4, length: 2, direction: "W", id: "D" }, { x: 0, y: 2, length: 2, direction: "S", id: "E" }, { x: 5, y: 0, length: 2, direction: "N", id: "F" }, { x: 2, y: 1, length: 2, direction: "E", id: "G" }, { x: 0, y: 0, length: 2, direction: "S", id: "B" }, { x: 3, y: 3, length: 2, direction: "W", id: "L" }, { x: 3, y: 4, length: 2, direction: "E", id: "K" }, { x: 5, y: 4, length: 2, direction: "N", id: "U" }, { x: 1, y: 0, length: 2, direction: "W", id: "V" }], gates: [{ x: 2, y: 3, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 2508, solution: [], boss: { id: "B", after: ["A", "C", "D", "E", "F", "G", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "E", id: "A" }, { x: 2, y: 1, length: 2, direction: "S", id: "C" }, { x: 4, y: 3, length: 2, direction: "E", id: "L" }, { x: 2, y: 4, length: 2, direction: "W", id: "B" }, { x: 0, y: 0, length: 2, direction: "W", id: "K" }, { x: 4, y: 5, length: 2, direction: "E", id: "G" }, { x: 3, y: 0, length: 2, direction: "N", id: "H" }, { x: 4, y: 0, length: 2, direction: "W", id: "I" }], gates: [{ x: 2, y: 5, trigger: "K" }, { x: 2, y: 0, trigger: "L" }], schema_version: 1, seed: 2719, solution: [], boss: { id: "B", after: ["A", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "N", id: "A" }, { x: 1, y: 3, length: 2, direction: "S", id: "C" }, { x: 0, y: 0, length: 2, direction: "W", id: "K" }, { x: 2, y: 1, length: 2, direction: "W", id: "B" }, { x: 3, y: 2, length: 2, direction: "S", id: "F" }, { x: 4, y: 0, length: 2, direction: "E", id: "G" }, { x: 0, y: 1, length: 2, direction: "S", id: "L" }, { x: 4, y: 2, length: 2, direction: "N", id: "I" }, { x: 0, y: 5, length: 2, direction: "W", id: "J" }], gates: [{ x: 1, y: 1, trigger: "K" }, { x: 4, y: 1, trigger: "L" }], schema_version: 1, seed: 2861, solution: [], boss: { id: "B", after: ["C", "F", "G", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 5, length: 2, direction: "E", id: "A" }, { x: 2, y: 3, length: 2, direction: "W", id: "C" }, { x: 0, y: 4, length: 2, direction: "W", id: "K" }, { x: 1, y: 2, length: 2, direction: "N", id: "E" }, { x: 5, y: 0, length: 2, direction: "N", id: "F" }, { x: 1, y: 0, length: 2, direction: "N", id: "G" }, { x: 3, y: 4, length: 2, direction: "W", id: "L" }, { x: 4, y: 2, length: 2, direction: "W", id: "I" }, { x: 0, y: 2, length: 2, direction: "S", id: "B" }, { x: 5, y: 3, length: 2, direction: "S", id: "U" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 3, y: 2, trigger: "L" }], schema_version: 1, seed: 3031, solution: [], boss: { id: "B", after: ["A", "E", "F", "G", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "W", id: "A" }, { x: 2, y: 1, length: 2, direction: "S", id: "K" }, { x: 4, y: 2, length: 2, direction: "N", id: "D" }, { x: 0, y: 0, length: 2, direction: "E", id: "B" }, { x: 3, y: 5, length: 2, direction: "W", id: "L" }, { x: 3, y: 0, length: 2, direction: "E", id: "G" }, { x: 3, y: 1, length: 2, direction: "S", id: "H" }, { x: 1, y: 1, length: 2, direction: "N", id: "I" }], gates: [{ x: 2, y: 5, trigger: "K" }, { x: 2, y: 0, trigger: "L" }], schema_version: 1, seed: 3059, solution: [], boss: { id: "B", after: ["A", "D", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 0, length: 2, direction: "N", id: "B" }, { x: 3, y: 4, length: 2, direction: "E", id: "C" }, { x: 3, y: 2, length: 2, direction: "N", id: "D" }, { x: 2, y: 4, length: 2, direction: "N", id: "E" }, { x: 4, y: 2, length: 2, direction: "N", id: "L" }, { x: 4, y: 5, length: 2, direction: "E", id: "G" }, { x: 3, y: 0, length: 2, direction: "E", id: "H" }, { x: 0, y: 2, length: 2, direction: "S", id: "I" }, { x: 0, y: 0, length: 2, direction: "W", id: "J" }, { x: 1, y: 2, length: 2, direction: "S", id: "U" }, { x: 3, y: 1, length: 2, direction: "E", id: "K" }], gates: [{ x: 1, y: 4, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 3092, solution: [], boss: { id: "B", after: ["C", "D", "G", "H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "N", id: "A" }, { x: 5, y: 1, length: 2, direction: "S", id: "C" }, { x: 2, y: 3, length: 2, direction: "S", id: "D" }, { x: 0, y: 3, length: 2, direction: "N", id: "E" }, { x: 0, y: 2, length: 2, direction: "W", id: "F" }, { x: 1, y: 4, length: 2, direction: "N", id: "B" }, { x: 0, y: 0, length: 2, direction: "N", id: "H" }, { x: 3, y: 1, length: 2, direction: "S", id: "L" }, { x: 4, y: 4, length: 2, direction: "W", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "U" }, { x: 4, y: 3, length: 2, direction: "E", id: "V" }], gates: [{ x: 3, y: 4, trigger: "K" }, { x: 1, y: 0, trigger: "L" }], schema_version: 1, seed: 3325, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "H", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 2, length: 2, direction: "E", id: "A" }, { x: 0, y: 3, length: 2, direction: "S", id: "C" }, { x: 1, y: 4, length: 2, direction: "W", id: "B" }, { x: 4, y: 0, length: 2, direction: "S", id: "L" }, { x: 1, y: 0, length: 2, direction: "W", id: "F" }, { x: 2, y: 2, length: 2, direction: "S", id: "G" }, { x: 1, y: 1, length: 2, direction: "S", id: "H" }, { x: 5, y: 3, length: 2, direction: "N", id: "K" }, { x: 3, y: 4, length: 2, direction: "S", id: "J" }], gates: [{ x: 2, y: 5, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 3342, solution: [], boss: { id: "B", after: ["A", "C", "F", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 3, length: 2, direction: "N", id: "K" }, { x: 5, y: 3, length: 2, direction: "N", id: "C" }, { x: 4, y: 2, length: 2, direction: "S", id: "D" }, { x: 2, y: 2, length: 2, direction: "S", id: "E" }, { x: 0, y: 1, length: 2, direction: "S", id: "F" }, { x: 0, y: 5, length: 2, direction: "E", id: "L" }, { x: 3, y: 3, length: 2, direction: "N", id: "H" }, { x: 4, y: 0, length: 2, direction: "E", id: "B" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 3, y: 0, trigger: "L" }], schema_version: 1, seed: 3579, solution: [], boss: { id: "B", after: ["D", "E", "F", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 3, length: 2, direction: "E", id: "A" }, { x: 4, y: 1, length: 2, direction: "E", id: "B" }, { x: 0, y: 2, length: 2, direction: "N", id: "D" }, { x: 2, y: 4, length: 2, direction: "W", id: "L" }, { x: 5, y: 4, length: 2, direction: "S", id: "K" }, { x: 2, y: 1, length: 2, direction: "E", id: "G" }, { x: 2, y: 3, length: 2, direction: "W", id: "H" }, { x: 1, y: 2, length: 2, direction: "S", id: "I" }, { x: 0, y: 1, length: 2, direction: "W", id: "J" }, { x: 2, y: 5, length: 2, direction: "W", id: "U" }], gates: [{ x: 1, y: 4, trigger: "K" }, { x: 1, y: 5, trigger: "L" }], schema_version: 1, seed: 3706, solution: [], boss: { id: "B", after: ["A", "D", "H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 2, length: 2, direction: "N", id: "B" }, { x: 1, y: 4, length: 2, direction: "N", id: "K" }, { x: 2, y: 2, length: 2, direction: "E", id: "D" }, { x: 2, y: 1, length: 2, direction: "W", id: "L" }, { x: 2, y: 3, length: 2, direction: "W", id: "F" }, { x: 0, y: 2, length: 2, direction: "W", id: "G" }, { x: 4, y: 0, length: 2, direction: "W", id: "H" }, { x: 5, y: 3, length: 2, direction: "N", id: "I" }, { x: 2, y: 4, length: 2, direction: "E", id: "J" }, { x: 2, y: 5, length: 2, direction: "W", id: "U" }], gates: [{ x: 0, y: 0, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 4035, solution: [], boss: { id: "B", after: ["F", "G", "H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 2, length: 2, direction: "S", id: "A" }, { x: 4, y: 5, length: 2, direction: "W", id: "B" }, { x: 5, y: 0, length: 2, direction: "S", id: "D" }, { x: 4, y: 2, length: 2, direction: "E", id: "E" }, { x: 2, y: 4, length: 2, direction: "W", id: "K" }, { x: 1, y: 2, length: 2, direction: "S", id: "G" }, { x: 0, y: 1, length: 2, direction: "S", id: "L" }, { x: 1, y: 0, length: 2, direction: "N", id: "I" }], gates: [{ x: 0, y: 3, trigger: "K" }, { x: 5, y: 4, trigger: "L" }], schema_version: 1, seed: 4039, solution: [], boss: { id: "B", after: ["E", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 0, length: 2, direction: "N", id: "A" }, { x: 0, y: 4, length: 2, direction: "W", id: "C" }, { x: 0, y: 1, length: 2, direction: "S", id: "L" }, { x: 0, y: 0, length: 2, direction: "W", id: "E" }, { x: 3, y: 1, length: 2, direction: "N", id: "F" }, { x: 5, y: 3, length: 2, direction: "N", id: "K" }, { x: 1, y: 1, length: 2, direction: "S", id: "H" }, { x: 2, y: 0, length: 2, direction: "S", id: "I" }, { x: 3, y: 5, length: 2, direction: "E", id: "J" }, { x: 4, y: 2, length: 2, direction: "S", id: "B" }, { x: 2, y: 3, length: 2, direction: "E", id: "V" }], gates: [{ x: 1, y: 5, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 4208, solution: [], boss: { id: "B", after: ["A", "C", "E", "F", "H", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "W", id: "L" }, { x: 3, y: 1, length: 2, direction: "E", id: "C" }, { x: 3, y: 0, length: 2, direction: "E", id: "K" }, { x: 1, y: 1, length: 2, direction: "W", id: "E" }, { x: 1, y: 2, length: 2, direction: "E", id: "F" }, { x: 5, y: 4, length: 2, direction: "N", id: "G" }, { x: 3, y: 2, length: 2, direction: "S", id: "B" }, { x: 4, y: 3, length: 2, direction: "E", id: "I" }, { x: 0, y: 0, length: 2, direction: "N", id: "J" }], gates: [{ x: 4, y: 2, trigger: "K" }, { x: 5, y: 1, trigger: "L" }], schema_version: 1, seed: 4227, solution: [], boss: { id: "B", after: ["C", "E", "G", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 5, length: 2, direction: "E", id: "A" }, { x: 3, y: 2, length: 2, direction: "W", id: "C" }, { x: 0, y: 3, length: 2, direction: "N", id: "D" }, { x: 4, y: 3, length: 2, direction: "S", id: "E" }, { x: 3, y: 0, length: 2, direction: "W", id: "F" }, { x: 2, y: 3, length: 2, direction: "E", id: "L" }, { x: 1, y: 4, length: 2, direction: "S", id: "K" }, { x: 1, y: 0, length: 2, direction: "W", id: "I" }, { x: 1, y: 1, length: 2, direction: "S", id: "B" }], gates: [{ x: 5, y: 3, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 4360, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 1, length: 2, direction: "W", id: "L" }, { x: 3, y: 3, length: 2, direction: "N", id: "C" }, { x: 0, y: 3, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "W", id: "E" }, { x: 1, y: 4, length: 2, direction: "W", id: "F" }, { x: 1, y: 0, length: 2, direction: "W", id: "G" }, { x: 0, y: 1, length: 2, direction: "N", id: "H" }, { x: 5, y: 1, length: 2, direction: "N", id: "I" }, { x: 1, y: 3, length: 2, direction: "E", id: "J" }, { x: 4, y: 0, length: 2, direction: "S", id: "K" }], gates: [{ x: 4, y: 3, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 4414, solution: [], boss: { id: "B", after: ["C", "E", "G", "H", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }], hard: [{ width: 6, height: 6, cars: [{ x: 3, y: 3, length: 2, direction: "N", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "C" }, { x: 2, y: 2, length: 2, direction: "E", id: "D" }, { x: 0, y: 5, length: 2, direction: "E", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "B" }, { x: 1, y: 1, length: 2, direction: "W", id: "G" }, { x: 5, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 3, length: 2, direction: "S", id: "I" }, { x: 0, y: 0, length: 2, direction: "N", id: "J" }], gates: [{ x: 1, y: 0, trigger: "K" }, { x: 0, y: 4, trigger: "L" }], schema_version: 1, seed: 19, solution: [], boss: { id: "B", after: ["G", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "S", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "C" }, { x: 0, y: 2, length: 2, direction: "E", id: "D" }, { x: 3, y: 3, length: 2, direction: "E", id: "L" }, { x: 4, y: 2, length: 2, direction: "E", id: "F" }, { x: 3, y: 0, length: 2, direction: "S", id: "G" }, { x: 1, y: 0, length: 2, direction: "S", id: "H" }, { x: 0, y: 4, length: 2, direction: "N", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "J" }, { x: 4, y: 0, length: 2, direction: "N", id: "K" }], gates: [{ x: 3, y: 2, trigger: "K" }, { x: 1, y: 5, trigger: "L" }], schema_version: 1, seed: 73, solution: [], boss: { id: "B", after: ["C", "D", "F", "G", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 4, length: 2, direction: "S", id: "A" }, { x: 3, y: 4, length: 2, direction: "S", id: "K" }, { x: 1, y: 2, length: 2, direction: "S", id: "D" }, { x: 0, y: 5, length: 2, direction: "W", id: "E" }, { x: 5, y: 4, length: 2, direction: "S", id: "F" }, { x: 3, y: 1, length: 2, direction: "S", id: "G" }, { x: 4, y: 2, length: 2, direction: "N", id: "H" }, { x: 2, y: 4, length: 2, direction: "S", id: "I" }, { x: 0, y: 1, length: 2, direction: "S", id: "J" }, { x: 4, y: 0, length: 2, direction: "E", id: "B" }, { x: 5, y: 1, length: 2, direction: "N", id: "L" }], gates: [{ x: 4, y: 1, trigger: "K" }, { x: 3, y: 3, trigger: "L" }], schema_version: 1, seed: 389, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "W", id: "A" }, { x: 5, y: 3, length: 2, direction: "N", id: "C" }, { x: 0, y: 1, length: 2, direction: "E", id: "D" }, { x: 3, y: 3, length: 2, direction: "N", id: "E" }, { x: 0, y: 2, length: 2, direction: "N", id: "B" }, { x: 0, y: 4, length: 2, direction: "E", id: "G" }, { x: 1, y: 3, length: 2, direction: "E", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "L" }, { x: 2, y: 5, length: 2, direction: "E", id: "J" }], gates: [{ x: 2, y: 4, trigger: "K" }, { x: 1, y: 2, trigger: "L" }], schema_version: 1, seed: 508, solution: [], boss: { id: "B", after: ["C", "D", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 1, length: 2, direction: "S", id: "C" }, { x: 3, y: 1, length: 2, direction: "E", id: "D" }, { x: 4, y: 3, length: 2, direction: "S", id: "E" }, { x: 2, y: 5, length: 2, direction: "W", id: "F" }, { x: 0, y: 4, length: 2, direction: "N", id: "G" }, { x: 1, y: 3, length: 2, direction: "S", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "B" }, { x: 3, y: 0, length: 2, direction: "E", id: "J" }], gates: [{ x: 5, y: 5, trigger: "K" }, { x: 2, y: 4, trigger: "L" }], schema_version: 1, seed: 543, solution: [], boss: { id: "B", after: ["D", "E", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 4, length: 2, direction: "N", id: "L" }, { x: 4, y: 1, length: 2, direction: "N", id: "B" }, { x: 2, y: 1, length: 2, direction: "S", id: "D" }, { x: 0, y: 4, length: 2, direction: "S", id: "K" }, { x: 4, y: 3, length: 2, direction: "N", id: "F" }, { x: 1, y: 4, length: 2, direction: "W", id: "G" }, { x: 0, y: 2, length: 2, direction: "N", id: "H" }, { x: 3, y: 4, length: 2, direction: "N", id: "I" }, { x: 0, y: 0, length: 2, direction: "E", id: "J" }, { x: 5, y: 2, length: 2, direction: "N", id: "U" }], gates: [{ x: 5, y: 1, trigger: "K" }, { x: 3, y: 0, trigger: "L" }], schema_version: 1, seed: 1078, solution: [], boss: { id: "B", after: ["D", "G", "H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 1, length: 2, direction: "S", id: "B" }, { x: 4, y: 1, length: 2, direction: "E", id: "C" }, { x: 2, y: 0, length: 2, direction: "S", id: "L" }, { x: 2, y: 4, length: 2, direction: "W", id: "E" }, { x: 0, y: 4, length: 2, direction: "W", id: "K" }, { x: 3, y: 2, length: 2, direction: "W", id: "G" }, { x: 3, y: 5, length: 2, direction: "E", id: "H" }, { x: 1, y: 3, length: 2, direction: "W", id: "I" }, { x: 4, y: 4, length: 2, direction: "W", id: "J" }, { x: 0, y: 0, length: 2, direction: "N", id: "U" }, { x: 5, y: 2, length: 2, direction: "S", id: "V" }], gates: [{ x: 0, y: 3, trigger: "K" }, { x: 0, y: 2, trigger: "L" }], schema_version: 1, seed: 1479, solution: [], boss: { id: "B", after: ["C", "E", "H", "I", "J", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "W", id: "A" }, { x: 4, y: 1, length: 2, direction: "N", id: "C" }, { x: 1, y: 4, length: 2, direction: "E", id: "D" }, { x: 2, y: 1, length: 2, direction: "E", id: "E" }, { x: 5, y: 3, length: 2, direction: "N", id: "B" }, { x: 0, y: 3, length: 2, direction: "W", id: "G" }, { x: 4, y: 0, length: 2, direction: "E", id: "K" }, { x: 3, y: 3, length: 2, direction: "N", id: "L" }, { x: 3, y: 5, length: 2, direction: "W", id: "J" }, { x: 0, y: 1, length: 2, direction: "S", id: "U" }], gates: [{ x: 0, y: 4, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 1700, solution: [], boss: { id: "B", after: ["A", "C", "E", "G", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "E", id: "L" }, { x: 3, y: 0, length: 2, direction: "S", id: "C" }, { x: 1, y: 0, length: 2, direction: "W", id: "D" }, { x: 3, y: 3, length: 2, direction: "W", id: "B" }, { x: 2, y: 3, length: 2, direction: "N", id: "F" }, { x: 4, y: 4, length: 2, direction: "E", id: "K" }, { x: 4, y: 5, length: 2, direction: "W", id: "H" }, { x: 5, y: 2, length: 2, direction: "N", id: "I" }, { x: 3, y: 2, length: 2, direction: "E", id: "J" }, { x: 0, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 2, y: 1, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 1904, solution: [], boss: { id: "B", after: ["D", "F", "H", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 4, length: 2, direction: "W", id: "A" }, { x: 1, y: 0, length: 2, direction: "W", id: "L" }, { x: 4, y: 1, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "N", id: "K" }, { x: 4, y: 4, length: 2, direction: "N", id: "F" }, { x: 2, y: 2, length: 2, direction: "N", id: "G" }, { x: 5, y: 3, length: 2, direction: "S", id: "H" }, { x: 4, y: 0, length: 2, direction: "W", id: "I" }, { x: 2, y: 4, length: 2, direction: "N", id: "J" }, { x: 1, y: 1, length: 2, direction: "S", id: "U" }], gates: [{ x: 2, y: 1, trigger: "K" }, { x: 1, y: 5, trigger: "L" }], schema_version: 1, seed: 2055, solution: [], boss: { id: "B", after: ["A", "G", "H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 0, length: 2, direction: "E", id: "A" }, { x: 0, y: 3, length: 2, direction: "W", id: "B" }, { x: 0, y: 1, length: 2, direction: "S", id: "D" }, { x: 4, y: 1, length: 2, direction: "S", id: "L" }, { x: 3, y: 3, length: 2, direction: "N", id: "F" }, { x: 5, y: 4, length: 2, direction: "N", id: "G" }, { x: 1, y: 1, length: 2, direction: "S", id: "H" }, { x: 1, y: 0, length: 2, direction: "E", id: "K" }, { x: 2, y: 4, length: 2, direction: "N", id: "J" }, { x: 2, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 5, y: 1, trigger: "K" }, { x: 5, y: 3, trigger: "L" }], schema_version: 1, seed: 2072, solution: [], boss: { id: "B", after: ["A", "F", "G", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 0, length: 2, direction: "S", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "L" }, { x: 2, y: 0, length: 2, direction: "S", id: "D" }, { x: 5, y: 2, length: 2, direction: "S", id: "E" }, { x: 3, y: 1, length: 2, direction: "S", id: "F" }, { x: 4, y: 4, length: 2, direction: "E", id: "G" }, { x: 1, y: 5, length: 2, direction: "E", id: "H" }, { x: 5, y: 0, length: 2, direction: "N", id: "I" }, { x: 2, y: 4, length: 2, direction: "W", id: "B" }, { x: 4, y: 2, length: 2, direction: "N", id: "K" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 3, y: 3, trigger: "L" }], schema_version: 1, seed: 2404, solution: [], boss: { id: "B", after: ["E", "G", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "S", id: "L" }, { x: 0, y: 1, length: 2, direction: "S", id: "C" }, { x: 5, y: 1, length: 2, direction: "S", id: "D" }, { x: 1, y: 5, length: 2, direction: "E", id: "E" }, { x: 3, y: 2, length: 2, direction: "N", id: "F" }, { x: 1, y: 0, length: 2, direction: "N", id: "G" }, { x: 4, y: 3, length: 2, direction: "E", id: "K" }, { x: 4, y: 0, length: 2, direction: "E", id: "I" }, { x: 2, y: 0, length: 2, direction: "E", id: "J" }, { x: 4, y: 4, length: 2, direction: "W", id: "B" }], gates: [{ x: 1, y: 4, trigger: "K" }, { x: 0, y: 4, trigger: "L" }], schema_version: 1, seed: 2654, solution: [], boss: { id: "B", after: ["C", "E", "F", "G", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 1, length: 2, direction: "N", id: "A" }, { x: 0, y: 2, length: 2, direction: "S", id: "C" }, { x: 5, y: 2, length: 2, direction: "N", id: "D" }, { x: 2, y: 3, length: 2, direction: "E", id: "E" }, { x: 0, y: 5, length: 2, direction: "W", id: "K" }, { x: 2, y: 0, length: 2, direction: "W", id: "B" }, { x: 2, y: 1, length: 2, direction: "N", id: "H" }, { x: 4, y: 0, length: 2, direction: "S", id: "I" }, { x: 5, y: 0, length: 2, direction: "N", id: "J" }, { x: 0, y: 4, length: 2, direction: "E", id: "U" }, { x: 4, y: 4, length: 2, direction: "E", id: "L" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 2927, solution: [], boss: { id: "B", after: ["A", "D", "E", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 3, length: 2, direction: "E", id: "A" }, { x: 2, y: 4, length: 2, direction: "N", id: "C" }, { x: 0, y: 2, length: 2, direction: "N", id: "D" }, { x: 3, y: 5, length: 2, direction: "W", id: "K" }, { x: 2, y: 0, length: 2, direction: "E", id: "F" }, { x: 5, y: 1, length: 2, direction: "N", id: "L" }, { x: 4, y: 0, length: 2, direction: "N", id: "H" }, { x: 0, y: 0, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "W", id: "J" }, { x: 5, y: 3, length: 2, direction: "S", id: "U" }], gates: [{ x: 5, y: 0, trigger: "K" }, { x: 2, y: 2, trigger: "L" }], schema_version: 1, seed: 3193, solution: [], boss: { id: "B", after: ["A", "C", "F", "H", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 0, length: 2, direction: "S", id: "A" }, { x: 2, y: 4, length: 2, direction: "E", id: "K" }, { x: 0, y: 0, length: 2, direction: "N", id: "D" }, { x: 0, y: 4, length: 2, direction: "N", id: "B" }, { x: 3, y: 2, length: 2, direction: "S", id: "F" }, { x: 1, y: 0, length: 2, direction: "W", id: "G" }, { x: 4, y: 0, length: 2, direction: "W", id: "H" }, { x: 2, y: 1, length: 2, direction: "S", id: "I" }, { x: 3, y: 5, length: 2, direction: "W", id: "L" }], gates: [{ x: 0, y: 2, trigger: "K" }, { x: 2, y: 5, trigger: "L" }], schema_version: 1, seed: 3429, solution: [], boss: { id: "B", after: ["D", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 1, length: 2, direction: "S", id: "A" }, { x: 3, y: 1, length: 2, direction: "S", id: "C" }, { x: 1, y: 0, length: 2, direction: "E", id: "L" }, { x: 0, y: 1, length: 2, direction: "N", id: "E" }, { x: 4, y: 3, length: 2, direction: "W", id: "F" }, { x: 1, y: 1, length: 2, direction: "N", id: "G" }, { x: 3, y: 5, length: 2, direction: "E", id: "H" }, { x: 3, y: 0, length: 2, direction: "E", id: "K" }, { x: 0, y: 4, length: 2, direction: "E", id: "J" }, { x: 5, y: 4, length: 2, direction: "N", id: "U" }, { x: 1, y: 5, length: 2, direction: "W", id: "B" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 2, y: 4, trigger: "L" }], schema_version: 1, seed: 3734, solution: [], boss: { id: "B", after: ["C", "E", "F", "H", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "N", id: "A" }, { x: 5, y: 2, length: 2, direction: "N", id: "L" }, { x: 1, y: 2, length: 2, direction: "W", id: "B" }, { x: 4, y: 5, length: 2, direction: "E", id: "E" }, { x: 0, y: 0, length: 2, direction: "E", id: "F" }, { x: 2, y: 0, length: 2, direction: "N", id: "G" }, { x: 1, y: 5, length: 2, direction: "W", id: "H" }, { x: 3, y: 2, length: 2, direction: "W", id: "I" }, { x: 4, y: 1, length: 2, direction: "E", id: "J" }, { x: 1, y: 3, length: 2, direction: "E", id: "K" }, { x: 0, y: 2, length: 2, direction: "N", id: "V" }], gates: [{ x: 3, y: 3, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 3977, solution: [], boss: { id: "B", after: ["E", "F", "G", "H", "J", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 4, length: 2, direction: "S", id: "A" }, { x: 1, y: 3, length: 2, direction: "N", id: "C" }, { x: 1, y: 5, length: 2, direction: "E", id: "L" }, { x: 2, y: 4, length: 2, direction: "E", id: "E" }, { x: 0, y: 0, length: 2, direction: "S", id: "F" }, { x: 4, y: 0, length: 2, direction: "E", id: "G" }, { x: 4, y: 1, length: 2, direction: "S", id: "K" }, { x: 0, y: 2, length: 2, direction: "E", id: "B" }, { x: 1, y: 1, length: 2, direction: "E", id: "J" }, { x: 3, y: 1, length: 2, direction: "S", id: "U" }], gates: [{ x: 3, y: 3, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 4329, solution: [], boss: { id: "B", after: ["A", "E", "G", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 5, length: 2, direction: "E", id: "A" }, { x: 1, y: 2, length: 2, direction: "E", id: "C" }, { x: 5, y: 0, length: 2, direction: "N", id: "B" }, { x: 3, y: 4, length: 2, direction: "W", id: "E" }, { x: 4, y: 3, length: 2, direction: "E", id: "L" }, { x: 0, y: 1, length: 2, direction: "N", id: "K" }, { x: 0, y: 3, length: 2, direction: "W", id: "H" }, { x: 5, y: 4, length: 2, direction: "N", id: "I" }, { x: 2, y: 3, length: 2, direction: "S", id: "J" }, { x: 1, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 0, y: 4, trigger: "K" }, { x: 3, y: 1, trigger: "L" }], schema_version: 1, seed: 4430, solution: [], boss: { id: "B", after: ["C", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "E", id: "A" }, { x: 0, y: 5, length: 2, direction: "W", id: "L" }, { x: 4, y: 2, length: 2, direction: "N", id: "B" }, { x: 3, y: 0, length: 2, direction: "N", id: "K" }, { x: 1, y: 1, length: 2, direction: "E", id: "F" }, { x: 2, y: 3, length: 2, direction: "N", id: "G" }, { x: 3, y: 3, length: 2, direction: "N", id: "H" }, { x: 5, y: 0, length: 2, direction: "S", id: "I" }, { x: 3, y: 5, length: 2, direction: "W", id: "J" }, { x: 1, y: 3, length: 2, direction: "S", id: "U" }, { x: 0, y: 0, length: 2, direction: "W", id: "V" }], gates: [{ x: 2, y: 5, trigger: "K" }, { x: 4, y: 0, trigger: "L" }], schema_version: 1, seed: 4663, solution: [], boss: { id: "B", after: ["I", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 5, length: 2, direction: "E", id: "A" }, { x: 1, y: 4, length: 2, direction: "W", id: "C" }, { x: 2, y: 5, length: 2, direction: "E", id: "K" }, { x: 4, y: 3, length: 2, direction: "W", id: "E" }, { x: 3, y: 2, length: 2, direction: "N", id: "B" }, { x: 1, y: 2, length: 2, direction: "S", id: "G" }, { x: 1, y: 0, length: 2, direction: "S", id: "L" }, { x: 3, y: 0, length: 2, direction: "E", id: "I" }], gates: [{ x: 0, y: 4, trigger: "K" }, { x: 2, y: 3, trigger: "L" }], schema_version: 1, seed: 4695, solution: [], boss: { id: "B", after: ["A", "C", "G", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "E", id: "K" }, { x: 2, y: 3, length: 2, direction: "S", id: "C" }, { x: 2, y: 2, length: 2, direction: "W", id: "D" }, { x: 0, y: 0, length: 2, direction: "E", id: "E" }, { x: 1, y: 1, length: 2, direction: "E", id: "F" }, { x: 1, y: 3, length: 2, direction: "N", id: "B" }, { x: 4, y: 3, length: 2, direction: "W", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "L" }, { x: 0, y: 5, length: 2, direction: "E", id: "J" }], gates: [{ x: 2, y: 0, trigger: "K" }, { x: 0, y: 3, trigger: "L" }], schema_version: 1, seed: 4959, solution: [], boss: { id: "B", after: ["C", "D", "E", "F"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "W", id: "K" }, { x: 1, y: 2, length: 2, direction: "N", id: "C" }, { x: 5, y: 0, length: 2, direction: "N", id: "D" }, { x: 1, y: 5, length: 2, direction: "E", id: "B" }, { x: 1, y: 0, length: 2, direction: "W", id: "L" }, { x: 4, y: 0, length: 2, direction: "S", id: "G" }, { x: 2, y: 2, length: 2, direction: "S", id: "H" }, { x: 4, y: 2, length: 2, direction: "E", id: "I" }, { x: 0, y: 3, length: 2, direction: "S", id: "J" }, { x: 0, y: 1, length: 2, direction: "E", id: "U" }, { x: 3, y: 0, length: 2, direction: "S", id: "V" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 3, y: 3, trigger: "L" }], schema_version: 1, seed: 5071, solution: [], boss: { id: "B", after: ["D", "G", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "N", id: "A" }, { x: 4, y: 1, length: 2, direction: "E", id: "C" }, { x: 1, y: 1, length: 2, direction: "N", id: "D" }, { x: 2, y: 4, length: 2, direction: "W", id: "K" }, { x: 1, y: 0, length: 2, direction: "E", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "G" }, { x: 1, y: 5, length: 2, direction: "W", id: "H" }, { x: 2, y: 1, length: 2, direction: "W", id: "L" }, { x: 4, y: 3, length: 2, direction: "N", id: "J" }, { x: 3, y: 2, length: 2, direction: "S", id: "U" }, { x: 0, y: 2, length: 2, direction: "S", id: "V" }], gates: [{ x: 3, y: 0, trigger: "K" }, { x: 3, y: 5, trigger: "L" }], schema_version: 1, seed: 5422, solution: [], boss: { id: "B", after: ["C", "G", "H", "J", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "E", id: "K" }, { x: 0, y: 1, length: 2, direction: "S", id: "C" }, { x: 1, y: 5, length: 2, direction: "W", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "E" }, { x: 1, y: 1, length: 2, direction: "E", id: "F" }, { x: 4, y: 2, length: 2, direction: "N", id: "G" }, { x: 5, y: 4, length: 2, direction: "N", id: "H" }, { x: 3, y: 2, length: 2, direction: "S", id: "I" }, { x: 2, y: 3, length: 2, direction: "N", id: "J" }, { x: 1, y: 0, length: 2, direction: "W", id: "L" }, { x: 3, y: 0, length: 2, direction: "S", id: "V" }], gates: [{ x: 0, y: 5, trigger: "K" }, { x: 3, y: 5, trigger: "L" }], schema_version: 1, seed: 5431, solution: [], boss: { id: "B", after: ["C", "G", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 4, length: 2, direction: "E", id: "A" }, { x: 3, y: 0, length: 2, direction: "E", id: "L" }, { x: 4, y: 2, length: 2, direction: "S", id: "D" }, { x: 1, y: 3, length: 2, direction: "N", id: "E" }, { x: 2, y: 5, length: 2, direction: "W", id: "F" }, { x: 4, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 0, length: 2, direction: "N", id: "B" }, { x: 0, y: 0, length: 2, direction: "W", id: "K" }, { x: 2, y: 2, length: 2, direction: "N", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "U" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 0, y: 2, trigger: "L" }], schema_version: 1, seed: 5863, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 4, length: 2, direction: "W", id: "A" }, { x: 3, y: 0, length: 2, direction: "N", id: "L" }, { x: 4, y: 0, length: 2, direction: "S", id: "D" }, { x: 4, y: 3, length: 2, direction: "E", id: "E" }, { x: 0, y: 3, length: 2, direction: "E", id: "F" }, { x: 1, y: 1, length: 2, direction: "S", id: "K" }, { x: 0, y: 0, length: 2, direction: "E", id: "H" }, { x: 3, y: 5, length: 2, direction: "E", id: "I" }, { x: 4, y: 2, length: 2, direction: "W", id: "J" }, { x: 1, y: 4, length: 2, direction: "S", id: "U" }, { x: 5, y: 0, length: 2, direction: "S", id: "B" }], gates: [{ x: 0, y: 4, trigger: "K" }, { x: 0, y: 2, trigger: "L" }], schema_version: 1, seed: 6069, solution: [], boss: { id: "B", after: ["A", "D", "E", "F", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "S", id: "B" }, { x: 1, y: 2, length: 2, direction: "W", id: "C" }, { x: 4, y: 1, length: 2, direction: "S", id: "D" }, { x: 3, y: 2, length: 2, direction: "N", id: "E" }, { x: 5, y: 3, length: 2, direction: "N", id: "K" }, { x: 2, y: 3, length: 2, direction: "N", id: "G" }, { x: 1, y: 1, length: 2, direction: "W", id: "H" }, { x: 1, y: 5, length: 2, direction: "E", id: "I" }, { x: 2, y: 0, length: 2, direction: "E", id: "L" }], gates: [{ x: 3, y: 5, trigger: "K" }, { x: 5, y: 0, trigger: "L" }], schema_version: 1, seed: 6110, solution: [], boss: { id: "B", after: ["D", "E", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "W", id: "A" }, { x: 3, y: 0, length: 2, direction: "W", id: "C" }, { x: 3, y: 4, length: 2, direction: "W", id: "D" }, { x: 5, y: 4, length: 2, direction: "S", id: "B" }, { x: 1, y: 4, length: 2, direction: "N", id: "K" }, { x: 0, y: 1, length: 2, direction: "W", id: "G" }, { x: 2, y: 2, length: 2, direction: "E", id: "H" }, { x: 2, y: 3, length: 2, direction: "E", id: "I" }, { x: 2, y: 4, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "U" }], gates: [{ x: 5, y: 3, trigger: "K" }, { x: 1, y: 2, trigger: "L" }], schema_version: 1, seed: 6147, solution: [], boss: { id: "B", after: ["A", "C", "G", "H", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 2, length: 2, direction: "W", id: "B" }, { x: 0, y: 3, length: 2, direction: "W", id: "C" }, { x: 2, y: 0, length: 2, direction: "S", id: "D" }, { x: 4, y: 3, length: 2, direction: "E", id: "E" }, { x: 4, y: 4, length: 2, direction: "W", id: "F" }, { x: 1, y: 4, length: 2, direction: "W", id: "G" }, { x: 0, y: 0, length: 2, direction: "S", id: "H" }, { x: 3, y: 4, length: 2, direction: "S", id: "L" }, { x: 4, y: 5, length: 2, direction: "W", id: "J" }, { x: 3, y: 1, length: 2, direction: "E", id: "K" }, { x: 4, y: 2, length: 2, direction: "W", id: "V" }], gates: [{ x: 1, y: 5, trigger: "K" }, { x: 3, y: 2, trigger: "L" }], schema_version: 1, seed: 6281, solution: [], boss: { id: "B", after: ["C", "D", "E", "G"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 0, length: 2, direction: "N", id: "B" }, { x: 4, y: 0, length: 2, direction: "N", id: "C" }, { x: 2, y: 4, length: 2, direction: "N", id: "D" }, { x: 5, y: 4, length: 2, direction: "N", id: "E" }, { x: 1, y: 3, length: 2, direction: "W", id: "F" }, { x: 2, y: 1, length: 2, direction: "W", id: "G" }, { x: 1, y: 4, length: 2, direction: "S", id: "H" }, { x: 3, y: 4, length: 2, direction: "S", id: "K" }, { x: 1, y: 1, length: 2, direction: "S", id: "L" }, { x: 5, y: 2, length: 2, direction: "N", id: "U" }, { x: 4, y: 2, length: 2, direction: "S", id: "V" }], gates: [{ x: 0, y: 1, trigger: "K" }, { x: 4, y: 4, trigger: "L" }], schema_version: 1, seed: 7085, solution: [], boss: { id: "B", after: ["C", "D", "F", "G", "H", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 3, length: 2, direction: "S", id: "A" }, { x: 1, y: 1, length: 2, direction: "E", id: "C" }, { x: 5, y: 2, length: 2, direction: "N", id: "L" }, { x: 5, y: 4, length: 2, direction: "S", id: "B" }, { x: 0, y: 5, length: 2, direction: "E", id: "F" }, { x: 4, y: 4, length: 2, direction: "N", id: "G" }, { x: 3, y: 2, length: 2, direction: "S", id: "H" }, { x: 1, y: 0, length: 2, direction: "W", id: "K" }, { x: 4, y: 0, length: 2, direction: "W", id: "J" }], gates: [{ x: 3, y: 4, trigger: "K" }, { x: 2, y: 5, trigger: "L" }], schema_version: 1, seed: 7271, solution: [], boss: { id: "B", after: ["A", "C", "G", "H", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 3, length: 2, direction: "S", id: "A" }, { x: 0, y: 4, length: 2, direction: "S", id: "K" }, { x: 3, y: 5, length: 2, direction: "W", id: "D" }, { x: 2, y: 2, length: 2, direction: "E", id: "E" }, { x: 2, y: 0, length: 2, direction: "W", id: "B" }, { x: 1, y: 1, length: 2, direction: "E", id: "L" }, { x: 2, y: 3, length: 2, direction: "N", id: "H" }, { x: 0, y: 2, length: 2, direction: "N", id: "I" }, { x: 0, y: 0, length: 2, direction: "W", id: "J" }], gates: [{ x: 3, y: 1, trigger: "K" }, { x: 0, y: 1, trigger: "L" }], schema_version: 1, seed: 7505, solution: [], boss: { id: "B", after: ["A", "D", "E", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 3, length: 2, direction: "N", id: "A" }, { x: 5, y: 4, length: 2, direction: "S", id: "K" }, { x: 1, y: 3, length: 2, direction: "S", id: "L" }, { x: 2, y: 3, length: 2, direction: "W", id: "E" }, { x: 3, y: 4, length: 2, direction: "N", id: "F" }, { x: 3, y: 2, length: 2, direction: "W", id: "B" }, { x: 0, y: 2, length: 2, direction: "W", id: "H" }, { x: 2, y: 1, length: 2, direction: "N", id: "I" }, { x: 0, y: 0, length: 2, direction: "S", id: "J" }, { x: 3, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 3, y: 0, trigger: "K" }, { x: 4, y: 0, trigger: "L" }], schema_version: 1, seed: 7598, solution: [], boss: { id: "B", after: ["H", "I", "J", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 2, y: 2, length: 2, direction: "E", id: "L" }, { x: 1, y: 3, length: 2, direction: "E", id: "C" }, { x: 2, y: 0, length: 2, direction: "W", id: "K" }, { x: 2, y: 1, length: 2, direction: "W", id: "E" }, { x: 4, y: 3, length: 2, direction: "S", id: "F" }, { x: 0, y: 4, length: 2, direction: "S", id: "G" }, { x: 4, y: 5, length: 2, direction: "W", id: "H" }, { x: 4, y: 0, length: 2, direction: "E", id: "I" }, { x: 2, y: 5, length: 2, direction: "W", id: "B" }, { x: 2, y: 4, length: 2, direction: "E", id: "U" }, { x: 0, y: 1, length: 2, direction: "N", id: "V" }], gates: [{ x: 5, y: 2, trigger: "K" }, { x: 5, y: 3, trigger: "L" }], schema_version: 1, seed: 7917, solution: [], boss: { id: "B", after: ["E", "G", "I", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 5, length: 2, direction: "W", id: "L" }, { x: 0, y: 1, length: 2, direction: "W", id: "B" }, { x: 3, y: 1, length: 2, direction: "E", id: "K" }, { x: 4, y: 2, length: 2, direction: "N", id: "E" }, { x: 3, y: 2, length: 2, direction: "S", id: "F" }, { x: 3, y: 4, length: 2, direction: "E", id: "G" }, { x: 3, y: 5, length: 2, direction: "E", id: "H" }, { x: 0, y: 3, length: 2, direction: "N", id: "I" }, { x: 5, y: 0, length: 2, direction: "S", id: "J" }], gates: [{ x: 0, y: 0, trigger: "K" }, { x: 4, y: 0, trigger: "L" }], schema_version: 1, seed: 7925, solution: [], boss: { id: "B", after: ["F", "G", "H", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 0, y: 1, length: 2, direction: "N", id: "K" }, { x: 3, y: 4, length: 2, direction: "S", id: "C" }, { x: 0, y: 5, length: 2, direction: "E", id: "D" }, { x: 3, y: 0, length: 2, direction: "W", id: "E" }, { x: 3, y: 3, length: 2, direction: "W", id: "F" }, { x: 1, y: 4, length: 2, direction: "E", id: "G" }, { x: 0, y: 3, length: 2, direction: "S", id: "L" }, { x: 5, y: 0, length: 2, direction: "S", id: "I" }, { x: 1, y: 0, length: 2, direction: "N", id: "J" }, { x: 4, y: 2, length: 2, direction: "W", id: "B" }], gates: [{ x: 4, y: 5, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 7995, solution: [], boss: { id: "B", after: ["C", "D", "E", "F", "G", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 5, y: 1, length: 2, direction: "N", id: "B" }, { x: 4, y: 4, length: 2, direction: "N", id: "C" }, { x: 1, y: 3, length: 2, direction: "E", id: "D" }, { x: 2, y: 4, length: 2, direction: "S", id: "E" }, { x: 3, y: 0, length: 2, direction: "E", id: "F" }, { x: 1, y: 2, length: 2, direction: "E", id: "G" }, { x: 4, y: 3, length: 2, direction: "E", id: "K" }, { x: 1, y: 0, length: 2, direction: "E", id: "I" }, { x: 0, y: 3, length: 2, direction: "S", id: "L" }, { x: 0, y: 1, length: 2, direction: "E", id: "U" }], gates: [{ x: 3, y: 1, trigger: "K" }, { x: 3, y: 3, trigger: "L" }], schema_version: 1, seed: 8252, solution: [], boss: { id: "B", after: ["E", "F", "I"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "W", id: "A" }, { x: 1, y: 0, length: 2, direction: "S", id: "C" }, { x: 2, y: 0, length: 2, direction: "N", id: "D" }, { x: 1, y: 4, length: 2, direction: "E", id: "L" }, { x: 3, y: 1, length: 2, direction: "S", id: "F" }, { x: 4, y: 2, length: 2, direction: "W", id: "B" }, { x: 4, y: 0, length: 2, direction: "S", id: "H" }, { x: 0, y: 5, length: 2, direction: "E", id: "I" }, { x: 2, y: 5, length: 2, direction: "E", id: "K" }, { x: 4, y: 3, length: 2, direction: "W", id: "U" }, { x: 5, y: 0, length: 2, direction: "N", id: "V" }], gates: [{ x: 2, y: 3, trigger: "K" }, { x: 4, y: 4, trigger: "L" }], schema_version: 1, seed: 8402, solution: [], boss: { id: "B", after: ["A", "D", "F", "I", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 1, length: 2, direction: "E", id: "A" }, { x: 3, y: 1, length: 2, direction: "N", id: "C" }, { x: 4, y: 0, length: 2, direction: "W", id: "K" }, { x: 0, y: 3, length: 2, direction: "E", id: "E" }, { x: 1, y: 4, length: 2, direction: "E", id: "F" }, { x: 4, y: 3, length: 2, direction: "E", id: "L" }, { x: 0, y: 2, length: 2, direction: "W", id: "H" }, { x: 0, y: 4, length: 2, direction: "S", id: "B" }, { x: 4, y: 5, length: 2, direction: "W", id: "J" }, { x: 0, y: 0, length: 2, direction: "N", id: "U" }], gates: [{ x: 1, y: 5, trigger: "K" }, { x: 3, y: 0, trigger: "L" }], schema_version: 1, seed: 8811, solution: [], boss: { id: "B", after: ["A", "C", "F", "H", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 1, length: 2, direction: "S", id: "A" }, { x: 2, y: 4, length: 2, direction: "N", id: "C" }, { x: 2, y: 1, length: 2, direction: "E", id: "D" }, { x: 5, y: 3, length: 2, direction: "N", id: "E" }, { x: 1, y: 2, length: 2, direction: "W", id: "K" }, { x: 4, y: 0, length: 2, direction: "E", id: "G" }, { x: 0, y: 0, length: 2, direction: "S", id: "L" }, { x: 3, y: 4, length: 2, direction: "N", id: "I" }, { x: 2, y: 3, length: 2, direction: "E", id: "J" }, { x: 4, y: 5, length: 2, direction: "E", id: "B" }, { x: 1, y: 3, length: 2, direction: "S", id: "V" }], gates: [{ x: 5, y: 2, trigger: "K" }, { x: 2, y: 0, trigger: "L" }], schema_version: 1, seed: 9738, solution: [], boss: { id: "B", after: ["E", "G", "J", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "N", id: "K" }, { x: 1, y: 4, length: 2, direction: "E", id: "L" }, { x: 4, y: 2, length: 2, direction: "N", id: "D" }, { x: 1, y: 0, length: 2, direction: "W", id: "E" }, { x: 1, y: 5, length: 2, direction: "E", id: "F" }, { x: 3, y: 0, length: 2, direction: "W", id: "B" }, { x: 0, y: 3, length: 2, direction: "W", id: "H" }, { x: 2, y: 3, length: 2, direction: "E", id: "I" }, { x: 4, y: 4, length: 2, direction: "N", id: "J" }, { x: 0, y: 4, length: 2, direction: "N", id: "U" }, { x: 1, y: 1, length: 2, direction: "N", id: "V" }], gates: [{ x: 5, y: 4, trigger: "K" }, { x: 3, y: 5, trigger: "L" }], schema_version: 1, seed: 9751, solution: [], boss: { id: "B", after: ["E", "H", "U", "V"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 2, length: 2, direction: "S", id: "A" }, { x: 5, y: 4, length: 2, direction: "S", id: "C" }, { x: 3, y: 2, length: 2, direction: "W", id: "D" }, { x: 4, y: 1, length: 2, direction: "W", id: "E" }, { x: 2, y: 1, length: 2, direction: "W", id: "K" }, { x: 2, y: 0, length: 2, direction: "E", id: "G" }, { x: 1, y: 5, length: 2, direction: "E", id: "H" }, { x: 3, y: 4, length: 2, direction: "W", id: "L" }, { x: 2, y: 3, length: 2, direction: "E", id: "J" }, { x: 0, y: 2, length: 2, direction: "N", id: "B" }], gates: [{ x: 2, y: 4, trigger: "K" }, { x: 2, y: 2, trigger: "L" }], schema_version: 1, seed: 9976, solution: [], boss: { id: "B", after: ["A", "C", "G", "H", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 4, y: 5, length: 2, direction: "W", id: "A" }, { x: 3, y: 0, length: 2, direction: "E", id: "C" }, { x: 1, y: 3, length: 2, direction: "N", id: "D" }, { x: 4, y: 1, length: 2, direction: "W", id: "E" }, { x: 1, y: 0, length: 2, direction: "N", id: "B" }, { x: 1, y: 2, length: 2, direction: "W", id: "L" }, { x: 0, y: 0, length: 2, direction: "N", id: "K" }, { x: 2, y: 3, length: 2, direction: "N", id: "I" }, { x: 0, y: 3, length: 2, direction: "N", id: "J" }], gates: [{ x: 3, y: 5, trigger: "K" }, { x: 0, y: 2, trigger: "L" }], schema_version: 1, seed: 10207, solution: [], boss: { id: "B", after: ["A", "C", "I", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "S", id: "A" }, { x: 4, y: 0, length: 2, direction: "N", id: "C" }, { x: 0, y: 2, length: 2, direction: "S", id: "K" }, { x: 1, y: 3, length: 2, direction: "S", id: "E" }, { x: 2, y: 0, length: 2, direction: "E", id: "F" }, { x: 2, y: 3, length: 2, direction: "E", id: "B" }, { x: 5, y: 3, length: 2, direction: "S", id: "H" }, { x: 0, y: 1, length: 2, direction: "E", id: "I" }, { x: 3, y: 5, length: 2, direction: "W", id: "L" }], gates: [{ x: 4, y: 3, trigger: "K" }, { x: 0, y: 5, trigger: "L" }], schema_version: 1, seed: 10456, solution: [], boss: { id: "B", after: ["C", "E", "F", "H"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 1, y: 1, length: 2, direction: "E", id: "A" }, { x: 5, y: 0, length: 2, direction: "N", id: "C" }, { x: 4, y: 0, length: 2, direction: "N", id: "D" }, { x: 0, y: 4, length: 2, direction: "N", id: "E" }, { x: 4, y: 2, length: 2, direction: "E", id: "K" }, { x: 3, y: 4, length: 2, direction: "N", id: "G" }, { x: 3, y: 0, length: 2, direction: "N", id: "H" }, { x: 2, y: 2, length: 2, direction: "W", id: "B" }, { x: 4, y: 3, length: 2, direction: "W", id: "L" }, { x: 1, y: 0, length: 2, direction: "E", id: "U" }, { x: 1, y: 5, length: 2, direction: "E", id: "V" }], gates: [{ x: 2, y: 3, trigger: "K" }, { x: 4, y: 5, trigger: "L" }], schema_version: 1, seed: 10989, solution: [], boss: { id: "B", after: ["A", "C", "D", "E", "H", "U"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }, { width: 6, height: 6, cars: [{ x: 3, y: 1, length: 2, direction: "N", id: "A" }, { x: 0, y: 3, length: 2, direction: "N", id: "K" }, { x: 2, y: 2, length: 2, direction: "N", id: "D" }, { x: 1, y: 3, length: 2, direction: "N", id: "E" }, { x: 5, y: 4, length: 2, direction: "N", id: "F" }, { x: 0, y: 1, length: 2, direction: "E", id: "G" }, { x: 3, y: 4, length: 2, direction: "N", id: "L" }, { x: 4, y: 0, length: 2, direction: "W", id: "B" }, { x: 2, y: 4, length: 2, direction: "S", id: "J" }], gates: [{ x: 5, y: 3, trigger: "K" }, { x: 0, y: 0, trigger: "L" }], schema_version: 1, seed: 11019, solution: [], boss: { id: "B", after: ["A", "D", "E", "G", "J"] }, level_id: "bank", title: "\u79CD\u5B50\u6311\u6218", stage: "\u7ED3\u6784\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6", goal: "\u5148\u770B\u95F8\u4F4D\u4E0E\u8001\u677F\u5458\u5DE5\u540D\u5355\u3002" }] };
+
+  // src/challenge/quality.ts
+  var occupied = (c) => Array.from({ length: c.length }, (_, i) => [c.x + ("EW".includes(c.direction) ? i : 0), c.y + ("NS".includes(c.direction) ? i : 0)]);
+  function ray(c) {
+    const [dX, dY] = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }[c.direction];
+    let x = c.x + (dX === 1 ? c.length : dX === -1 ? -1 : 0), y = c.y + (dY === 1 ? c.length : dY === -1 ? -1 : 0);
+    const out = [];
+    while (x >= 0 && x < 6 && y >= 0 && y < 6) {
+      out.push([x, y]);
+      x += dX;
+      y += dY;
+    }
+    return out;
+  }
+  function validateBoard(l) {
+    if (l.width !== 6 || l.height !== 6 || !Array.isArray(l.cars) || l.cars.length < 3 || l.cars.length > 12 || !Array.isArray(l.gates) || l.gates.length < 1 || l.gates.length > 2) throw Error("board bounds");
+    const grid = Array.from({ length: 6 }, () => Array(6).fill("")), ids = /* @__PURE__ */ new Set();
+    for (const c of l.cars) {
+      if (!/^[A-Z]$/.test(c.id) || ids.has(c.id) || !Number.isInteger(c.x) || !Number.isInteger(c.y) || c.length !== 2 || !["N", "E", "S", "W"].includes(c.direction)) throw Error("car schema");
+      ids.add(c.id);
+      for (const [x, y] of occupied(c)) {
+        if (x < 0 || y < 0 || x >= 6 || y >= 6 || grid[y][x]) throw Error("car overlap");
+        grid[y][x] = c.id;
+      }
+    }
+    const gates = /* @__PURE__ */ new Set(), triggers = /* @__PURE__ */ new Set();
+    for (const g of l.gates) {
+      if (!Number.isInteger(g.x) || !Number.isInteger(g.y) || g.x < 0 || g.x >= 6 || g.y < 0 || g.y >= 6 || grid[g.y][g.x] || !ids.has(g.trigger) || triggers.has(g.trigger) || gates.has(`${g.x},${g.y}`)) throw Error("gate schema");
+      gates.add(`${g.x},${g.y}`);
+      triggers.add(g.trigger);
+    }
+    if (l.boss && (!ids.has(l.boss.id) || triggers.has(l.boss.id) || !Array.isArray(l.boss.after) || l.boss.after.length < 2 || new Set(l.boss.after).size !== l.boss.after.length || l.boss.after.some((id) => !ids.has(id) || id === l.boss.id || triggers.has(id)))) throw Error("boss schema");
+    return true;
+  }
+  var hash = (s) => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16).padStart(8, "0");
+  };
+  function inspect(l, full = true) {
+    try {
+      validateBoard(l);
+    } catch {
+      return null;
+    }
+    const n = l.cars.length, all = (1 << n) - 1, index = (id) => l.cars.findIndex((c) => c.id === id), physical = Array(n).fill(0), gated = Array(n).fill(0), conditions = Array(n).fill(0), pred = Array(n).fill(0), edges = [];
+    const grid = Array.from({ length: 6 }, () => Array(6).fill(-1));
+    l.cars.forEach((c, i) => occupied(c).forEach(([x, y]) => grid[y][x] = i));
+    l.cars.forEach((c, i) => {
+      for (const [x, y] of ray(c)) {
+        const b = grid[y][x];
+        if (b >= 0 && b !== i) physical[i] |= 1 << b;
+        for (const g of l.gates) if (g.x === x && g.y === y) gated[i] |= 1 << index(g.trigger);
+      }
+    });
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      if (physical[i] & 1 << j) edges.push([j, i, "P"]);
+      if (i !== j && gated[i] & 1 << j) edges.push([i, j, `G${l.cars[j].id}`]);
+    }
+    if (l.boss) {
+      const b = index(l.boss.id);
+      for (const id of l.boss.after) {
+        conditions[b] |= 1 << index(id);
+        edges.push([index(id), b, "B"]);
+      }
+    }
+    for (const [a, b] of edges) pred[b] |= 1 << a;
+    let m = 0;
+    const depth = Array(n).fill(1), order = [];
+    for (let t = 0; t < n; t++) {
+      const i = pred.findIndex((p, i2) => !(m & 1 << i2) && (p & ~m) === 0);
+      if (i < 0) return null;
+      depth[i] = 1 + Math.max(0, ...pred.map((_, j) => pred[i] & 1 << j ? depth[j] : 0));
+      order.push(i);
+      m |= 1 << i;
+    }
+    const closure = pred.slice();
+    for (let k = 0; k < n; k++) for (let i = 0; i < n; i++) if (closure[i] & 1 << k) closure[i] |= closure[k];
+    const availability = physical.map((v, i) => v | conditions[i]);
+    for (let k = 0; k < n; k++) for (let i = 0; i < n; i++) if (availability[i] & 1 << k) availability[i] |= availability[k];
+    const semantic = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      if (availability[i] & 1 << j) semantic.push([j, i, "A"]);
+      if (closure[i] & 1 << j) semantic.push([j, i, "W"]);
+    }
+    const role = (i) => l.boss?.id === l.cars[i].id ? "B" : l.gates.some((g) => g.trigger === l.cars[i].id) ? l.cars[i].id : "R";
+    let colors = l.cars.map((_, i) => role(i));
+    for (let r = 0; r < n; r++) colors = colors.map((v, i) => hash(v + "|" + semantic.filter(([a, b]) => a === i || b === i).map(([a, b, t]) => `${a === i ? "O" : "I"}${t}:${colors[a === i ? b : a]}`).sort().join(",")));
+    const structure = hash(colors.slice().sort().join("|") + "|" + semantic.length), windows = l.gates.map((g) => {
+      const i = index(g.trigger), before = closure[i].toString(2).replaceAll("0", "").length, after = closure.filter((p) => p & 1 << i).length;
+      return { trigger: g.trigger, before, after, width: n - before - after };
+    });
+    const gateSets = l.gates.map((g) => l.cars.filter((c, i) => c.id !== g.trigger && gated[i] & 1 << index(g.trigger)).map((c) => c.id).sort().join(","));
+    const orderedTriggers = l.gates.length === 1 || Boolean(closure[index(l.gates[0].trigger)] & 1 << index(l.gates[1].trigger) || closure[index(l.gates[1].trigger)] & 1 << index(l.gates[0].trigger));
+    const bossBlocks = l.boss ? physical.some((p) => p & 1 << index(l.boss.id)) : false, base = { depth: Math.max(...depth), edges: edges.length, windows, structure, orderedTriggers, bossBlocks, distinctGateRoutes: new Set(gateSets).size === l.gates.length && gateSets.every(Boolean), solution: order.map((i) => l.cars[i].id), states: 0, legalActions: 0, losingActions: 0, badRatio: 0, ambiguousStates: 0, wrongTriggers: [], branchRange: [0, 0], near: "" };
+    if (!full) return base;
+    const failed = (mask) => gated.some((g, i) => !(mask & 1 << i) && Boolean(g & mask));
+    const legal = (mask, i) => !(mask & 1 << i) && ((physical[i] | conditions[i]) & ~mask) === 0 && (gated[i] & mask) === 0;
+    const q = [0], seen = new Set(q), wrong = /* @__PURE__ */ new Set(), ranges = [];
+    for (let k = 0; k < q.length; k++) {
+      const mask = q[k];
+      if (failed(mask)) continue;
+      let good = 0, bad = 0;
+      for (let i = 0; i < n; i++) if (legal(mask, i)) {
+        base.legalActions++;
+        const next = mask | 1 << i;
+        if (failed(next)) {
+          bad++;
+          base.losingActions++;
+          wrong.add(l.cars[i].id);
+        } else good++;
+        if (!seen.has(next)) {
+          seen.add(next);
+          q.push(next);
+        }
+      }
+      if (good && bad) base.ambiguousStates++;
+      ranges.push(good + bad);
+    }
+    base.states = q.length;
+    base.badRatio = base.losingActions / Math.max(1, base.legalActions);
+    base.wrongTriggers = [...wrong].sort();
+    base.branchRange = [Math.min(...ranges), Math.max(...ranges)];
+    base.near = hash([base.depth, ...l.cars.map((_, i) => `${role(i)}:${semantic.filter((e) => e[0] === i).length}:${semantic.filter((e) => e[1] === i).length}`).sort(), ...windows.map((w) => `${w.before}:${w.after}:${w.width}`), Math.round(base.badRatio * 10)].join("|"));
+    return base;
+  }
+  function fits(l, d, m = inspect(l)) {
+    if (!m) return false;
+    if (d === "easy") return l.gates.length === 1 && !l.boss && m.depth >= 2 && m.depth <= 4 && m.ambiguousStates >= 2 && m.wrongTriggers.length === 1;
+    if (l.gates.length !== 2 || !l.boss || !m.bossBlocks || !m.distinctGateRoutes || !m.orderedTriggers || m.wrongTriggers.length !== 2 || m.badRatio < 0.08 || m.ambiguousStates < 3) return false;
+    return d === "normal" ? m.depth >= 5 && m.depth <= 6 : m.depth >= 7 && m.badRatio >= 0.1 && m.windows.some((w) => w.width <= 2);
+  }
+  function referenceSolve(l, start = 0) {
+    validateBoard(l);
+    const n = l.cars.length, grid = Array.from({ length: 6 }, () => Array(6).fill(-1)), block = Array(n).fill(0), gate = Array(n).fill(0), after = Array(n).fill(0);
+    l.cars.forEach((c, i) => occupied(c).forEach(([x, y]) => grid[y][x] = i));
+    for (let i = 0; i < n; i++) {
+      for (const [x, y] of ray(l.cars[i])) {
+        const j = grid[y][x];
+        if (j >= 0 && j !== i) block[i] |= 1 << j;
+        for (const g of l.gates) if (g.x === x && g.y === y) gate[i] |= 1 << l.cars.findIndex((c) => c.id === g.trigger);
+      }
+      if (l.boss?.id === l.cars[i].id) for (const id of l.boss.after) after[i] |= 1 << l.cars.findIndex((c) => c.id === id);
+    }
+    const q = [start], seen = new Set(q), parent = /* @__PURE__ */ new Map(), full = (1 << n) - 1;
+    for (let p = 0; p < q.length; p++) {
+      const mask = q[p];
+      if (mask === full) {
+        const path = [];
+        let k = mask;
+        while (k !== start) {
+          const prev = parent.get(k);
+          path.push(l.cars[prev[1]].id);
+          k = prev[0];
+        }
+        return path.reverse();
+      }
+      if (gate.some((g, i) => !(mask & 1 << i) && g & mask)) continue;
+      for (let i = 0; i < n; i++) if (!(mask & 1 << i) && ((block[i] | after[i]) & ~mask) === 0 && (gate[i] & mask) === 0) {
+        const next = mask | 1 << i;
+        if (!seen.has(next)) {
+          seen.add(next);
+          parent.set(next, [mask, i]);
+          q.push(next);
+        }
+      }
+    }
+    return null;
+  }
+  function layoutSignature(l) {
+    const candidates = [];
+    for (let mirror = 0; mirror < 2; mirror++) for (let rot = 0; rot < 4; rot++) {
+      const point = (x, y) => {
+        if (mirror) x = 5 - x;
+        for (let r = 0; r < rot; r++) [x, y] = [5 - y, x];
+        return [x, y];
+      };
+      const tuples = l.cars.map((c) => {
+        let [dx, dy] = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }[c.direction];
+        if (mirror) dx = -dx;
+        for (let r = 0; r < rot; r++) [dx, dy] = [-dy, dx];
+        const role = l.boss?.id === c.id ? "B" : l.gates.some((g) => g.trigger === c.id) ? c.id : l.boss?.after.includes(c.id) ? "E" : "U";
+        return `${role}:${dx},${dy}:` + occupied(c).map(([x, y]) => point(x, y).join(",")).sort().join(";");
+      }).sort();
+      candidates.push(tuples.join("|") + "|" + l.gates.map((g) => g.trigger + point(g.x, g.y).join(",")).sort().join(";"));
+    }
+    return hash(candidates.sort()[0]);
+  }
+
+  // src/challenge/generate.ts
+  var generatorVersion = 1;
+  var banks = random_bank_default;
+  function random(seed) {
+    let s = (seed ^ 2654435769) >>> 0 || 1831565813;
+    return () => {
+      s ^= s << 13;
+      s ^= s >>> 17;
+      s ^= s << 5;
+      return (s >>> 0) / 4294967296;
+    };
+  }
+  var copy = (x) => JSON.parse(JSON.stringify(x));
+  function mutate(l, r) {
+    const n = (v) => Math.floor(r() * v), operation = n(7), pick = n(l.cars.length), car2 = l.cars[pick];
+    if (operation === 1) {
+      const g = l.gates[n(l.gates.length)];
+      g.x = n(6);
+      g.y = n(6);
+    } else if (operation === 3 && l.cars.length < 12) {
+      const id = "ACDEFGHIJMNOPQRSTUVWXYZ".split("").find((id2) => !l.cars.some((c) => c.id === id2));
+      if (id) {
+        l.cars.push({ id, x: n(6), y: n(6), length: 2, direction: ["N", "E", "S", "W"][n(4)] });
+        if (l.boss && r() < 0.5) l.boss.after.push(id);
+      }
+    } else if (operation === 4 && l.cars.length > 6 && !["B", "K", "L"].includes(car2.id)) {
+      l.cars.splice(pick, 1);
+      if (l.boss) l.boss.after = l.boss.after.filter((id) => id !== car2.id);
+    } else if (operation === 5 && l.boss && !["B", "K", "L"].includes(car2.id)) {
+      l.boss.after = l.boss.after.includes(car2.id) ? l.boss.after.filter((id) => id !== car2.id) : [...l.boss.after, car2.id];
+    } else if (operation === 6) {
+      car2.direction = ["N", "E", "S", "W"][n(4)];
+    } else {
+      car2.x = n(6);
+      car2.y = n(6);
+      car2.direction = ["N", "E", "S", "W"][n(4)];
+    }
+  }
+  var fastFits = (l, d, m) => Boolean(m && (d === "easy" ? l.gates.length === 1 && !l.boss && m.depth >= 2 && m.depth <= 4 : l.boss && l.gates.length === 2 && m.bossBlocks && m.distinctGateRoutes && m.orderedTriggers && (d === "normal" ? m.depth >= 5 && m.depth <= 6 : m.depth >= 7)));
+  function generate(seed, difficulty, options = {}) {
+    if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295 || !["easy", "normal", "hard"].includes(difficulty)) throw Error("seed or difficulty");
+    const r = random(seed), bank = banks[difficulty], start = Math.floor(r() * bank.length);
+    let attempts = 0, acceptedMutations = 0, structuralChanges = 0;
+    const started = performance.now();
+    let output = null, metrics = null, fallback = false;
+    if (!options.forceFallback) for (let round = 0; round < 4 && !output; round++) {
+      let candidate = copy(bank[(start + round * 13) % bank.length]), before = inspect(candidate, false);
+      const origin = before.structure;
+      let changes = 0;
+      for (let j = 0; j < 16; j++) {
+        attempts++;
+        const proposal = copy(candidate);
+        mutate(proposal, r);
+        const m = inspect(proposal, false);
+        if (!fastFits(proposal, difficulty, m)) continue;
+        candidate = proposal;
+        acceptedMutations++;
+        if (m.structure !== before.structure) changes++;
+        before = m;
+      }
+      const full = inspect(candidate);
+      if (changes > 0 && full?.structure !== origin && fits(candidate, difficulty, full) && referenceSolve(candidate)) {
+        output = candidate;
+        metrics = full;
+        structuralChanges = changes;
+      }
+    }
+    if (!output) {
+      fallback = true;
+      for (let i = 0; i < bank.length; i++) {
+        const candidate = copy(bank[(start + i) % bank.length]), m = inspect(candidate);
+        if (fits(candidate, difficulty, m) && referenceSolve(candidate)) {
+          output = candidate;
+          metrics = m;
+          break;
+        }
+      }
+    }
+    if (!output || !metrics) throw Error("no verified board");
+    output.level_id = `seed-v${generatorVersion}-${difficulty}-${seed}`;
+    output.seed = seed;
+    output.title = "\u79CD\u5B50\u6311\u6218";
+    output.stage = "\u7B97\u6CD5\u5206\u6863\xB7\u5F85\u771F\u4EBA\u6821\u51C6";
+    output.goal = output.boss ? `\u8001\u677F\u7B49\u672C\u533A\u5458\u5DE5\uFF1BK\u2460/L\u2461\u5404\u5173\u5BF9\u5E94\u95F8\u3002` : "\u70B9\u51FB\u79BB\u573A\uFF1BK\u8D70\u540E\u9053\u95F8\u6C38\u4E45\u843D\u4E0B\u3002";
+    output.solution = [];
+    return { level: output, metrics, meta: { seed, difficulty, generatorVersion, attempts, acceptedMutations, structuralChanges, fallback, layout: layoutSignature(output), structure: metrics.structure, near: metrics.near, elapsedMs: performance.now() - started } };
+  }
+
+  // src/core/game.ts
+  function cells(c) {
+    return Array.from({ length: c.length }, (_, i) => [c.x + (["E", "W"].includes(c.direction) ? i : 0), c.y + (["N", "S"].includes(c.direction) ? i : 0)]);
+  }
+
+  // src/challenge/event-core.ts
+  var remaining = (l, s) => l.cars.filter((c) => !s.removed.includes(c.id));
+  var closed = (g, s) => s.removed.includes(g.trigger);
+  function ray2(c, l) {
+    const [dx, dy] = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[c.direction];
+    let x = c.x + (c.direction === "E" ? c.length : c.direction === "W" ? -1 : 0), y = c.y + (c.direction === "S" ? c.length : c.direction === "N" ? -1 : 0);
+    const p = [];
+    while (x >= 0 && y >= 0 && x < l.width && y < l.height) {
+      p.push([x, y]);
+      x += dx;
+      y += dy;
+    }
+    return p;
+  }
+  function obstruction(l, s, id) {
+    if (l.boss?.id === id) {
+      const wait = l.boss.after.filter((id2) => !s.removed.includes(id2));
+      if (wait.length) return `\u5458\u5DE5 ${wait.join("\u3001")} \u672A\u8D70\uFF1A\u8001\u677F\u987B\u5728\u672C\u533A\u5458\u5DE5\u4E4B\u540E\u79BB\u573A`;
+    }
+    const cars = remaining(l, s), c = cars.find((c2) => c2.id === id);
+    if (!c) return "\u5DF2\u79BB\u573A";
+    for (const [x, y] of ray2(c, l)) {
+      if (l.gates.some((g) => closed(g, s) && g.x === x && g.y === y)) return "\u9053\u95F8";
+      const b = cars.find((v) => v.id !== id && cells(v).some(([a, b2]) => a === x && b2 === y));
+      if (b) return b.id;
+    }
+    return null;
+  }
+  function trapped(l, s) {
+    return remaining(l, s).filter((c) => ray2(c, l).some(([x, y]) => l.gates.some((g) => closed(g, s) && g.x === x && g.y === y))).map((c) => c.id);
+  }
+  var won = (l, s) => s.removed.length === l.cars.length;
+  function move(l, s, id) {
+    if (trapped(l, s).length || obstruction(l, s, id) !== null) return s;
+    return { removed: [...s.removed, id] };
+  }
+  function restore(raw, levels) {
+    const zero = { version: 1, current: 0, completed: [], removed: [] };
+    try {
+      const v = JSON.parse(raw || "null");
+      if (v?.version !== 1 || !Number.isInteger(v.current) || v.current < 0 || v.current >= levels.length || !Array.isArray(v.completed) || !Array.isArray(v.removed) || v.removed.length > levels[v.current].cars.length || new Set(v.removed).size !== v.removed.length) return zero;
+      const done = v.completed.filter((id) => typeof id === "string" && levels.some((l) => l.level_id === id));
+      let s = { removed: [] };
+      for (const id of v.removed) {
+        const n = move(levels[v.current], s, id);
+        if (n === s) return { ...zero, current: v.current, completed: done };
+        s = n;
+      }
+      return { version: 1, current: v.current, completed: [...new Set(done)], removed: s.removed };
+    } catch {
+      return zero;
+    }
+  }
+
+  // src/challenge/random-session.ts
+  function makeSession(g, recent = []) {
+    const r = { seed: g.meta.seed, difficulty: g.meta.difficulty, structure: g.meta.structure, near: g.meta.near, layout: g.meta.layout };
+    return { version: 1, generatorVersion, seed: g.meta.seed, difficulty: g.meta.difficulty, level: g.level, meta: g.meta, progress: { version: 1, current: 0, completed: [], removed: [] }, counters: { hints: 0, restarts: 0, failures: 0 }, recent: [...recent, r].slice(-20) };
+  }
+  function newSession(seed, difficulty, recent = []) {
+    return makeSession(generate(seed, difficulty), recent);
+  }
+  function freshSession(difficulty, recent, baseSeed) {
+    for (let i = 0; i < 16; i++) {
+      const seed = baseSeed + Math.imul(i, 2654435761) >>> 0, g = generate(seed, difficulty);
+      if (recent.some((r) => r.structure === g.meta.structure || r.layout === g.meta.layout) || recent.slice(-8).some((r) => r.near === g.meta.near)) continue;
+      return makeSession(g, recent);
+    }
+    return null;
+  }
+  function restoreSession(raw) {
+    try {
+      if (!raw || raw.length > 15e4) return null;
+      const v = JSON.parse(raw);
+      if (v?.version !== 1 || v.generatorVersion !== generatorVersion) return null;
+      const g = generate(v.seed, v.difficulty);
+      if (JSON.stringify(g.level) !== JSON.stringify(v.level)) return null;
+      const progress = restore(JSON.stringify(v.progress), [g.level]);
+      if (JSON.stringify(progress.removed) !== JSON.stringify(v.progress?.removed)) return null;
+      const counters = { hints: 0, restarts: 0, failures: 0 };
+      for (const k of ["hints", "restarts", "failures"]) {
+        const n = v.counters?.[k];
+        if (!Number.isInteger(n) || n < 0 || n > 9999) return null;
+        counters[k] = n;
+      }
+      const recent = Array.isArray(v.recent) ? v.recent.filter((r) => Number.isInteger(r?.seed) && r.seed >= 0 && r.seed <= 4294967295 && ["easy", "normal", "hard"].includes(r.difficulty) && [r.structure, r.near, r.layout].every((x) => typeof x === "string" && /^[0-9a-f]{8}$/.test(x))).slice(-20) : [];
+      return { ...makeSession(g, []), progress, counters, recent: recent.length ? recent : [{ seed: g.meta.seed, difficulty: g.meta.difficulty, structure: g.meta.structure, near: g.meta.near, layout: g.meta.layout }] };
+    } catch {
+      return null;
+    }
+  }
+
+  // src/challenge/timed-core.ts
+  function judge(l, s, budgetMs = 25, now = () => performance.now()) {
+    try {
+      const startTime = now();
+      validateBoard(l);
+      const n = l.cars.length, full = (1 << n) - 1, index = (id) => l.cars.findIndex((c) => c.id === id);
+      let start = 0;
+      for (const id of s.removed) {
+        const i = index(id);
+        if (i < 0) throw Error("unknown car");
+        start |= 1 << i;
+      }
+      const grid = Array.from({ length: 6 }, () => Array(6).fill(-1)), blocks = Array(n).fill(0), gates = Array(n).fill(0), after = Array(n).fill(0);
+      l.cars.forEach((c, i) => occupied(c).forEach(([x, y]) => grid[y][x] = i));
+      for (let i = 0; i < n; i++) {
+        for (const [x, y] of ray(l.cars[i])) {
+          const j = grid[y][x];
+          if (j >= 0 && j !== i) blocks[i] |= 1 << j;
+          for (const g of l.gates) if (g.x === x && g.y === y) gates[i] |= 1 << index(g.trigger);
+        }
+        if (l.boss?.id === l.cars[i].id) for (const id of l.boss.after) after[i] |= 1 << index(id);
+      }
+      const q = [start], seen = new Set(q), parents = /* @__PURE__ */ new Map();
+      for (let p = 0; p < q.length; p++) {
+        if (now() - startTime > budgetMs) return { kind: "unknown", reason: "timeout" };
+        const mask = q[p];
+        if (mask === full) {
+          const path = [];
+          let k = mask;
+          while (k !== start) {
+            const prev = parents.get(k);
+            path.push(l.cars[prev[1]].id);
+            k = prev[0];
+          }
+          return { kind: "solvable", path: path.reverse() };
+        }
+        if (gates.some((g, i) => !(mask & 1 << i) && g & mask)) continue;
+        for (let i = 0; i < n; i++) if (!(mask & 1 << i) && ((blocks[i] | after[i]) & ~mask) === 0 && (gates[i] & mask) === 0) {
+          const next = mask | 1 << i;
+          if (!seen.has(next)) {
+            seen.add(next);
+            parents.set(next, [mask, i]);
+            q.push(next);
+          }
+        }
+      }
+      return { kind: "unsolvable" };
+    } catch {
+      return { kind: "unknown", reason: "exception" };
+    }
+  }
+  var newRun = () => ({ status: "idle", elapsedMs: 0, errors: 0, penaltyMs: 0, hints: 0, completionAtMs: null, lastError: "" });
+  var score = (r) => r.elapsedMs + r.penaltyMs;
+  var formatTime = (ms) => {
+    const t = Math.floor(Math.max(0, ms) / 100);
+    return `${String(Math.floor(t / 600)).padStart(2, "0")}:${String(Math.floor(t / 10) % 60).padStart(2, "0")}.${t % 10}`;
+  };
+  var ForegroundClock = class {
+    constructor() {
+      __publicField(this, "anchor", null);
+    }
+    sync(r, now, foreground) {
+      if (this.anchor !== null && r.status === "running") r.elapsedMs += Math.max(0, now - this.anchor);
+      this.anchor = foreground && r.status === "running" ? now : null;
+    }
+    reset() {
+      this.anchor = null;
+    }
+  };
+  function attempt(l, s, r, id, solve = judge) {
+    if (r.status === "won" || r.status === "failed") return { kind: "inactive", state: s };
+    if (obstruction(l, s, id) !== null) return { kind: "blocked", state: s };
+    if (r.status === "idle") r.status = "running";
+    const next = move(l, s, id);
+    let verdict;
+    try {
+      verdict = solve(l, next);
+    } catch {
+      verdict = { kind: "unknown", reason: "exception" };
+    }
+    if (verdict.kind === "unknown") return { kind: "unknown", state: s };
+    if (verdict.kind === "unsolvable") {
+      r.errors++;
+      r.penaltyMs = r.errors * 1e4;
+      if (r.errors === 3) r.status = "failed";
+      return { kind: "error", state: s, consequence: next };
+    }
+    if (won(l, next)) r.completionAtMs = r.elapsedMs + 260 + (l.gates.some((g) => g.trigger === id) ? 340 : 0);
+    return { kind: "accepted", state: next };
+  }
+
+  // src/challenge/timed-session.ts
+  var timedKey = "nc-mg-001-timed-v1";
+  var wrap = (board2) => ({ version: 1, board: board2, run: newRun() });
+  var newTimed = (seed, difficulty, recent = []) => wrap(newSession(seed, difficulty, recent));
+  var freshTimed = (difficulty, recent, seed) => {
+    const b = freshSession(difficulty, recent, seed);
+    return b ? wrap(b) : null;
+  };
+  function restoreTimed(raw) {
+    try {
+      if (!raw || raw.length > 2e5) return null;
+      const v = JSON.parse(raw);
+      if (v.version !== 1) return null;
+      const board2 = restoreSession(JSON.stringify(v.board)), r = v.run;
+      if (!board2 || !r || !["idle", "running", "won", "failed"].includes(r.status) || !Number.isFinite(r.elapsedMs) || r.elapsedMs < 0 || !Number.isInteger(r.errors) || r.errors < 0 || r.errors > 3 || r.penaltyMs !== r.errors * 1e4 || !Number.isInteger(r.hints) || r.hints < 0 || r.hints > 9999 || typeof r.lastError !== "string" || r.lastError.length > 300) return null;
+      const all = board2.progress.removed.length === board2.level.cars.length;
+      if (r.errors === 3 !== (r.status === "failed") || r.status === "won" && !all || r.status === "idle" && (r.elapsedMs !== 0 || r.errors !== 0 || board2.progress.removed.length > 0)) return null;
+      if (r.completionAtMs !== null && (!Number.isFinite(r.completionAtMs) || r.completionAtMs < 0 || !all)) return null;
+      if (all && r.status === "running" && r.completionAtMs === null) return null;
+      return { version: 1, board: board2, run: { ...r, bestUpdated: !!r.bestUpdated } };
+    } catch {
+      return null;
+    }
+  }
+
+  // src/challenge/event-art.ts
+  var ox = 24;
+  var oy = 58;
+  var cell = 52;
+  function box(c, x, y, w, h, r, fill) {
+    c.fillStyle = fill;
+    c.beginPath();
+    c.roundRect(x, y, w, h, r);
+    c.fill();
+  }
+  function label(c, s, x, y, size = 12, color = "#3b6266", align = "left") {
+    c.font = `600 ${size}px system-ui,sans-serif`;
+    c.textAlign = align;
+    c.fillStyle = color;
+    c.fillText(s, x, y);
+  }
+  function key(c, x, y, scale = 1) {
+    c.save();
+    c.translate(x, y);
+    c.scale(scale, scale);
+    c.strokeStyle = "#735315";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.arc(-4, 0, 4, 0, Math.PI * 2);
+    c.moveTo(0, 0);
+    c.lineTo(12, 0);
+    c.moveTo(8, 0);
+    c.lineTo(8, 5);
+    c.moveTo(12, 0);
+    c.lineTo(12, 4);
+    c.stroke();
+    c.restore();
+  }
+  function car(c, v, offset, outline, shake2, pressed, special = "") {
+    const horizontal = "EW".includes(v.direction), w = (horizontal ? v.length : 1) * cell - 8, h = (horizontal ? 1 : v.length) * cell - 8, len = v.length * cell - 8, x = ox + v.x * cell + 4, y = oy + v.y * cell + 4, angle = { E: 0, S: Math.PI / 2, W: Math.PI, N: -Math.PI / 2 }[v.direction];
+    c.save();
+    c.translate(x + w / 2, y + h / 2);
+    c.rotate(angle);
+    c.translate(offset + shake2, 0);
+    if (pressed) c.scale(0.94, 0.94);
+    c.shadowColor = "#173d4655";
+    c.shadowBlur = 5;
+    c.shadowOffsetY = 4;
+    box(c, -len / 2, -21, len, 42, 15, "#244a54");
+    c.shadowColor = "transparent";
+    for (const a of [-len / 2 + 13, len / 2 - 28]) {
+      box(c, a, -25, 15, 9, 3, "#28424e");
+      box(c, a, 16, 15, 9, 3, "#28424e");
+      box(c, a + 3, -24, 8, 2, 1, "#617680");
+    }
+    const palette = special === "boss" ? ["#b5a0d3", "#7f6da7"] : special === "second" ? ["#93d4e9", "#4d9ac9"] : v.id === "K" ? ["#ffe49a", "#eab14c"] : [["#9fdbd1", "#55b3a9"], ["#a9c8f5", "#719cdd"], ["#f4bac0", "#d9879e"], ["#c9bce9", "#a393cf"]][v.id.charCodeAt(0) % 4], gradient = c.createLinearGradient(0, -22, 0, 22);
+    gradient.addColorStop(0, palette[0]);
+    gradient.addColorStop(1, palette[1]);
+    c.fillStyle = gradient;
+    c.beginPath();
+    c.roundRect(-len / 2, -22, len, 44, 14);
+    c.fill();
+    c.strokeStyle = outline || palette[1];
+    c.lineWidth = outline ? 3 : 1.5;
+    c.stroke();
+    box(c, -len / 2 + 9, -18, len - 20, 5, 3, "#ffffff72");
+    box(c, len / 2 - 34, -15, 15, 30, 5, "#355c71");
+    box(c, len / 2 - 32, -13, 6, 26, 3, "#8bc4d9");
+    box(c, -len / 2 + 10, -12, 9, 24, 4, "#537d8b");
+    box(c, len / 2 - 8, -14, 5, 9, 2, "#fff8d5");
+    box(c, len / 2 - 8, 5, 5, 9, 2, "#fff8d5");
+    box(c, -len / 2 + 2, -14, 3, 7, 1, "#d66671");
+    box(c, -len / 2 + 2, 7, 3, 7, 1, "#d66671");
+    c.strokeStyle = "#315261";
+    c.lineWidth = 2;
+    c.lineCap = "round";
+    c.beginPath();
+    c.moveTo(len / 2 - 17, -5);
+    c.lineTo(len / 2 - 12, 0);
+    c.lineTo(len / 2 - 17, 5);
+    c.stroke();
+    if (special === "boss") {
+      c.fillStyle = "#ffe39a";
+      c.strokeStyle = "#775b28";
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(-17, 5);
+      c.lineTo(-19, -5);
+      c.lineTo(-11, 0);
+      c.lineTo(-7, -8);
+      c.lineTo(-3, 0);
+      c.lineTo(5, -5);
+      c.lineTo(3, 5);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else if (special === "second") {
+      c.fillStyle = "#d6f7ff";
+      c.strokeStyle = "#28627b";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-7, -8);
+      c.lineTo(1, 0);
+      c.lineTo(-7, 8);
+      c.lineTo(-15, 0);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else if (v.id === "K") key(c, -7, 0, 0.9);
+    else {
+      c.strokeStyle = "#ffffff77";
+      c.beginPath();
+      c.moveTo(-8, -11);
+      c.lineTo(8, -11);
+      c.stroke();
+    }
+    c.restore();
+    label(c, v.id, x + 6 + Math.cos(angle) * offset, y + 12 + Math.sin(angle) * offset, 9, "#304e59");
+  }
+  function drawBoard(c, l, s, moving2, highlight2, shake2) {
+    const special = (id) => l.boss?.id === id ? "boss" : l.gates.some((g) => g.trigger === id) && id !== "K" ? "second" : "";
+    const victims = trapped(l, s), elapsed = moving2 ? Date.now() - moving2.start : 0;
+    box(c, 0, 0, 360, 384, 18, "#e6eee7");
+    label(c, `P  \u5269 ${remaining(l, s).length} \u8F86`, 24, 28, 15);
+    key(c, 205, 23, 0.65);
+    label(c, l.gates.length > 1 ? "K\u2460 / L\u2461 \u79BB\u573A\u843D\u5BF9\u5E94\u95F8" : "K \u79BB\u573A \xB7 \u9053\u95F8\u843D\u4E0B", 336, 28, 11, "#85672e", "right");
+    box(c, 19, 53, 322, 322, 13, "#c4d3cb");
+    box(c, 24, 58, 312, 312, 9, "#748c8d");
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
+      box(c, ox + x * cell + 2, oy + y * cell + 2, 48, 48, 4, (x + y) % 2 ? "#7d9494" : "#819998");
+      c.strokeStyle = "#d8e7dd88";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(ox + x * cell + 8, oy + y * cell + 7);
+      c.lineTo(ox + x * cell + 8, oy + y * cell + 45);
+      c.lineTo(ox + x * cell + 44, oy + y * cell + 45);
+      c.stroke();
+    }
+    for (let i = 0; i < 25; i++) {
+      c.fillStyle = "#dce5d514";
+      c.fillRect(30 + i * 67 % 300, 64 + i * 43 % 300, 2, 2);
+    }
+    for (const [x, y, angle] of [[180, 45, -Math.PI / 2], [180, 379, Math.PI / 2], [11, 215, Math.PI], [349, 215, 0]]) {
+      c.save();
+      c.translate(x, y);
+      c.rotate(angle);
+      c.strokeStyle = "#759681";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-4, -4);
+      c.lineTo(1, 0);
+      c.lineTo(-4, 4);
+      c.stroke();
+      c.restore();
+    }
+    if (victims.length) {
+      c.save();
+      c.strokeStyle = "#ffe4b2";
+      c.lineWidth = 3;
+      c.setLineDash([5, 4]);
+      for (const id of victims) {
+        const v = l.cars.find((v2) => v2.id === id);
+        for (const g of l.gates) {
+          const horiz = "EW".includes(v.direction);
+          if (closed(g, s) && (horiz ? g.y === v.y : g.x === v.x) && { E: g.x >= v.x + v.length, W: g.x < v.x, N: g.y < v.y, S: g.y >= v.y + v.length }[v.direction]) {
+            c.beginPath();
+            c.moveTo(ox + (v.x + (horiz ? v.length / 2 : 0.5)) * cell, oy + (v.y + (horiz ? 0.5 : v.length / 2)) * cell);
+            c.lineTo(ox + (g.x + 0.5) * cell, oy + (g.y + 0.5) * cell);
+            c.stroke();
+          }
+        }
+      }
+      c.restore();
+    }
+    for (const g of l.gates) {
+      const x = ox + g.x * cell, y = oy + g.y * cell, shut = closed(g, s), t = moving2?.car.id === g.trigger ? Math.max(0, Math.min(1, (elapsed - 260) / 340)) : shut ? 1 : 0;
+      box(c, x + 3, y + 3, 46, 46, 8, t === 1 ? "#f1b8a0" : g.trigger === "L" ? "#a7c9dc" : "#e1ca86");
+      c.strokeStyle = "#fff1b0";
+      c.lineWidth = 1;
+      c.setLineDash([3, 3]);
+      c.strokeRect(x + 6, y + 6, 40, 40);
+      c.setLineDash([]);
+      c.save();
+      c.translate(x + 10, y + 29);
+      c.rotate(-1.25 * (1 - t));
+      c.shadowColor = "#614c4c55";
+      c.shadowBlur = 2;
+      c.shadowOffsetY = 3;
+      box(c, -3, -4, 36, 8, 3, "#fff5d6");
+      c.shadowColor = "transparent";
+      for (let a = 3; a < 30; a += 10) box(c, a, -4, 5, 8, 1, g.trigger === "L" ? "#4c86b4" : "#dc705d");
+      c.restore();
+      box(c, x + 5, y + 24, 11, 18, 4, "#48656a");
+      c.fillStyle = t === 1 ? "#d35557" : "#65c691";
+      c.beginPath();
+      c.arc(x + 10.5, y + 29, 3, 0, Math.PI * 2);
+      c.fill();
+      if (t === 1) {
+        c.strokeStyle = "#ad4d4f";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(x + 37, y + 39, 6, 0, Math.PI * 2);
+        c.moveTo(x + 33, y + 43);
+        c.lineTo(x + 41, y + 35);
+        c.stroke();
+      } else key(c, x + 29, y + 42, 0.45);
+      label(c, g.trigger === "L" ? "\u2461 L" : "\u2460 K", x + 34, y + 13, 9, "#3b5362", "center");
+    }
+    c.save();
+    c.beginPath();
+    c.rect(24, 58, 312, 312);
+    c.clip();
+    for (const v of remaining(l, s)) {
+      const tutorial = s.removed.includes("A") ? s.removed.includes("K") ? "B" : "K" : "A", outline = victims.includes(v.id) ? "#ff6d62" : v.id === highlight2 || l.level_id === "overtime-1" && !moving2 && !highlight2 && v.id === tutorial ? "#fff8df" : "";
+      const dt = shake2?.id === v.id ? Date.now() - shake2.start : 999;
+      car(c, v, 0, outline, dt < 240 ? Math.sin(dt / 18) * 3 * (1 - dt / 240) : 0, false, special(v.id));
+    }
+    if (moving2) {
+      const t = Math.max(0, Math.min(1, (elapsed - 55) / 205));
+      car(c, moving2.car, moving2.distance * (1 - (1 - t) ** 2), moving2.car.id === "K" ? "#fff1a7" : "", 0, elapsed < 55, special(moving2.car.id));
+    }
+    c.restore();
+    if (won(l, s) && !moving2) {
+      for (let i = 0; i < 14; i++) {
+        const x = 30 + i * 73 % 300, y = 45 + i * 37 % 20;
+        c.save();
+        c.translate(x, y);
+        c.rotate(i);
+        box(c, -2, -3, 4, 6, 1, ["#eab14c", "#65b6a5", "#e6a1a7"][i % 3]);
+        c.restore();
+      }
+      label(c, "\u2713 \u5168\u5458\u6536\u5DE5", 180, 30, 16, "#326f60", "center");
+    }
+  }
+
+  // src/challenge/event-sound.ts
+  var settingsKey = "nc-mg-001-enhanced-sound";
+  var notes = {
+    boss: { hz: [330, 440, 660], duration: 0.08, wave: "triangle" },
+    gate2: { hz: [260, 130], duration: 0.075, wave: "triangle" },
+    key2: { hz: [830, 1100], duration: 0.085, wave: "sine" },
+    tap: { hz: [620], duration: 0.045, wave: "sine" },
+    exit: { hz: [220, 330], duration: 0.09, wave: "triangle" },
+    blocked: { hz: [145, 115], duration: 0.065, wave: "triangle" },
+    key: { hz: [740, 990], duration: 0.085, wave: "sine" },
+    gate: { hz: [180, 90], duration: 0.075, wave: "triangle" },
+    trapped: { hz: [390, 310], duration: 0.11, wave: "sine" },
+    success: { hz: [523, 659, 784, 1047], duration: 0.1, wave: "sine" },
+    ui: { hz: [460], duration: 0.045, wave: "sine" }
+  };
+  function makeSound(button) {
+    let enabled = true, context, master, active = 0, unavailable = false;
+    const last = /* @__PURE__ */ new Map();
+    try {
+      enabled = localStorage.getItem(settingsKey) !== "off";
+    } catch {
+    }
+    function label2() {
+      button.textContent = enabled ? "\u266A \u97F3\u6548\u5F00" : "\u266A \u97F3\u6548\u5173";
+      button.setAttribute("aria-pressed", String(enabled));
+      button.title = unavailable ? "\u97F3\u9891\u4E0D\u53EF\u7528\uFF0C\u4ECD\u53EF\u9759\u97F3\u6E38\u73A9" : "\u77ED\u97F3\u6548\uFF0C\u65E0\u80CC\u666F\u97F3\u4E50";
+    }
+    function disableAudio() {
+      unavailable = true;
+      label2();
+    }
+    function unlock() {
+      if (!enabled || unavailable) return;
+      try {
+        if (!context) {
+          context = new AudioContext();
+          master = context.createGain();
+          master.gain.value = 0.12;
+          master.connect(context.destination);
+        }
+        if (context.state === "suspended") void context.resume().catch(disableAudio);
+      } catch {
+        disableAudio();
+      }
+    }
+    function play(cue) {
+      if (!enabled || unavailable || !context || !master || context.state !== "running") return;
+      const now = context.currentTime;
+      if (now - (last.get(cue) ?? -100) < 0.08 || active >= 6) return;
+      last.set(cue, now);
+      const n = notes[cue];
+      try {
+        for (let i = 0; i < n.hz.length && active < 6; i++) {
+          const osc = context.createOscillator(), gain = context.createGain(), at = now + 8e-3 + i * n.duration;
+          osc.type = n.wave;
+          osc.frequency.setValueAtTime(n.hz[i], at);
+          if (cue === "exit") osc.frequency.exponentialRampToValueAtTime(n.hz[i] * 1.3, at + n.duration);
+          gain.gain.setValueAtTime(0, at);
+          gain.gain.linearRampToValueAtTime(0.23, at + 8e-3);
+          gain.gain.exponentialRampToValueAtTime(1e-4, at + n.duration);
+          osc.connect(gain);
+          gain.connect(master);
+          active++;
+          osc.onended = () => {
+            active--;
+            osc.disconnect();
+            gain.disconnect();
+          };
+          osc.start(at);
+          osc.stop(at + n.duration + 0.01);
+        }
+      } catch {
+        disableAudio();
+      }
+    }
+    function toggle() {
+      enabled = !enabled;
+      try {
+        localStorage.setItem(settingsKey, enabled ? "on" : "off");
+      } catch {
+      }
+      if (!enabled && master && context) {
+        master.gain.cancelScheduledValues(context.currentTime);
+        master.gain.setValueAtTime(0, context.currentTime);
+      }
+      if (enabled) {
+        unlock();
+        if (master && context) master.gain.setValueAtTime(0.12, context.currentTime);
+        play("ui");
+      }
+      label2();
+    }
+    function pause() {
+      if (context) {
+        try {
+          void context.suspend().catch(() => {
+          });
+        } catch {
+        }
+      }
+    }
+    label2();
+    return { unlock, play, toggle, pause };
+  }
+
+  // src/challenge/timed-app.ts
+  var $ = (id) => document.getElementById(id);
+  var names = { easy: "\u7B80\u5355", normal: "\u666E\u901A", hard: "\u56F0\u96BE" };
+  var test = new URLSearchParams(location.search).has("test");
+  var seedNumber = () => {
+    try {
+      return crypto.getRandomValues(new Uint32Array(1))[0];
+    } catch {
+      return Date.now() >>> 0;
+    }
+  };
+  var game;
+  try {
+    game = restoreTimed(localStorage.getItem(timedKey)) || newTimed(seedNumber(), "easy");
+  } catch {
+    game = newTimed(305419896, "easy");
+  }
+  var board = () => game.board;
+  var level = () => board().level;
+  var state = () => ({ removed: board().progress.removed });
+  var run = () => game.run;
+  var canvas = $("board");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 360;
+  canvas.height = 384;
+  var sound = makeSound($("sound"));
+  document.addEventListener("pointerdown", () => sound.unlock(), { capture: true });
+  document.addEventListener("keydown", () => sound.unlock(), { capture: true });
+  $("sound").onclick = () => sound.toggle();
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("button,select,summary");
+    if (el && el.id !== "sound") sound.play("ui");
+  }, true);
+  var clock = new ForegroundClock();
+  var paused = document.hidden;
+  var lastSave = 0;
+  var message = "\u9996\u6B21\u5408\u6CD5\u70B9\u8F66\u5F00\u59CB\u8BA1\u65F6\u3002\u6BCF\u5C40\u4E09\u6B21\u673A\u4F1A\uFF0C\u9519\u8BEF\u53EA\u64A4\u9500\u5F53\u524D\u6B65\u3002";
+  var highlight = "";
+  var moving = null;
+  var consequence = null;
+  var errorUntil = 0;
+  var shake = null;
+  var trigger = (id) => level().gates.some((g) => g.trigger === id);
+  function persist() {
+    try {
+      localStorage.setItem(timedKey, JSON.stringify(game));
+      $("storage").textContent = "";
+    } catch {
+      $("storage").textContent = "\u672C\u673A\u5B58\u50A8\u4E0D\u53EF\u7528\uFF1A\u5237\u65B0\u65E0\u6CD5\u6062\u590D\uFF0C\u4E5F\u4E0D\u80FD\u4FDD\u5B58\u6210\u7EE9\u3002";
+    }
+  }
+  function sync() {
+    const r = run();
+    clock.sync(r, performance.now(), !paused);
+    if (r.status === "running" && r.completionAtMs !== null && r.elapsedMs >= r.completionAtMs) {
+      run().status = "won";
+      board().progress.completed = [level().level_id];
+      clock.reset();
+      sound.play("success");
+      persist();
+    }
+  }
+  function cancel() {
+    moving = null;
+    consequence = null;
+    errorUntil = 0;
+    highlight = "";
+    shake = null;
+  }
+  function render() {
+    const r = run(), done = r.status === "won", failed = r.status === "failed", anim = !!moving || !!consequence;
+    $("levelTitle").textContent = `${names[board().difficulty]} \xB7 #${board().seed}`;
+    $("stage").textContent = level().boss ? `B\u8001\u677F\uFF1A\u5458\u5DE5 ${level().boss.after.join("\u3001")} \u5168\u8D70\u540E\u624D\u80FD\u8D70\uFF1B\u5176\u4F59\u540E\u52E4\u53EF\u968F\u540E\u79BB\u573A\u3002K\u2460/L\u2461\u5404\u5173\u5BF9\u5E94\u95F8\u3002` : "\u70B9\u51FB\u6CBF\u7BAD\u5934\u79BB\u573A\uFF1BK\u2460\u79BB\u573A\u5173\u95F8\u3002";
+    $("elapsed").textContent = `\u25F7 ${formatTime(r.elapsedMs)}`;
+    $("penalty").textContent = `\u7F5A\u65F6 +${r.penaltyMs / 1e3}s`;
+    $("lives").textContent = "\u2665".repeat(3 - r.errors) + "\u2661".repeat(r.errors);
+    $("lives").setAttribute("aria-label", `\u5269\u4F59${3 - r.errors}\u6B21\u673A\u4F1A`);
+    drawBoard(ctx, level(), consequence || state(), moving, highlight, shake);
+    let text = paused ? "\u5DF2\u6682\u505C\uFF1A\u540E\u53F0\u65F6\u95F4\u4E0D\u8BA1\u5165\u6210\u7EE9\u3002" : consequence ? message : moving ? `${moving.car.id} \u6B63\u5728\u79BB\u573A${trigger(moving.car.id) ? "\uFF0C\u968F\u540E\u843D\u95F8" : ""}\u2026\u2026` : failed ? `\u4E09\u6B21\u7B56\u7565\u9519\u8BEF\uFF0C\u672C\u5C40\u5931\u8D25\u3002\u5DF2\u64A4\u9500\u6700\u540E\u4E00\u6B65\uFF0C\u7D2F\u8BA1\u7F5A\u65F6+30\u79D2\u3002\u514D\u8D39\u91CD\u5F00\u518D\u6311\u6218\u3002` : done ? `\u6E05\u573A\u5B8C\u6210\uFF01\u5B9E\u9645 ${formatTime(r.elapsedMs)} + \u7F5A\u65F6 ${r.penaltyMs / 1e3}\u79D2 = ${formatTime(score(r))}\u3002` : message;
+    $("status").textContent = text;
+    $("status").className = failed || consequence ? "failure" : done ? "success" : "";
+    $("restart").textContent = failed ? "\u514D\u8D39\u91CD\u65B0\u6311\u6218" : "\u514D\u8D39\u91CD\u5F00";
+    $("restart").classList.toggle("urgent", failed);
+    $("hint").disabled = anim || done || failed;
+    $("next").disabled = !done || anim;
+    $("harder").disabled = !done || anim || board().difficulty === "hard";
+    canvas.dataset.phase = consequence ? "undoing" : moving ? trigger(moving.car.id) && Date.now() - moving.start >= 260 ? "gate-closing" : "exiting" : r.status;
+    canvas.dataset.seed = String(board().seed);
+    canvas.dataset.difficulty = board().difficulty;
+    $("progress").textContent = `\u79CD\u5B50${board().seed} \xB7 \u9519\u8BEF${r.errors}/3 \xB7 \u63D0\u793A${r.hints} \xB7 \u5237\u65B0\u4FDD\u7559\u672C\u5C40\u4E0E\u7F5A\u65F6`;
+  }
+  function tick() {
+    sync();
+    const now = Date.now();
+    if (!paused) {
+      if (moving) {
+        const elapsed = now - moving.start;
+        if (trigger(moving.car.id) && elapsed >= 260 && !moving.gateSound) {
+          moving.gateSound = true;
+          sound.play(moving.car.id === "L" ? "gate2" : "gate");
+        }
+        if (elapsed >= 260 + (trigger(moving.car.id) ? 340 : 0)) {
+          moving = null;
+          persist();
+        }
+      }
+      if (consequence && now >= errorUntil) {
+        consequence = null;
+        moving = null;
+        highlight = "";
+      }
+      if (performance.now() - lastSave >= 250 && run().status === "running") {
+        persist();
+        lastSave = performance.now();
+      }
+    }
+    render();
+    setTimeout(tick, 50);
+  }
+  function begin(g) {
+    sync();
+    cancel();
+    clock.reset();
+    game = g;
+    message = "\u5148\u89C2\u5BDF\u518D\u70B9\u8F66\uFF1B\u9996\u6B21\u5408\u6CD5\u64CD\u4F5C\u5F00\u59CB\u8BA1\u65F6\u3002";
+    $("difficulty").value = board().difficulty;
+    $("seed").value = String(board().seed);
+    persist();
+    render();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  function fresh(d) {
+    try {
+      const g = freshTimed(d, board().recent, seedNumber());
+      if (g) begin(g);
+      else {
+        message = "\u8FD1\u671F\u7ED3\u6784\u8F83\u76F8\u4F3C\uFF0C\u672C\u5C40\u4ECD\u4FDD\u7559\u3002\u8BF7\u6362\u96BE\u5EA6\u6216\u6307\u5B9A\u79CD\u5B50\u3002";
+        render();
+      }
+    } catch {
+      message = "\u672A\u751F\u6210\u65B0\u6311\u6218\uFF0C\u672C\u5C40\u4ECD\u4FDD\u7559\u3002";
+      render();
+    }
+  }
+  $("newChallenge").onclick = () => fresh($("difficulty").value);
+  $("playSeed").onclick = () => {
+    const v = $("seed").value;
+    try {
+      if (!/^\d{1,10}$/.test(v)) throw Error("seed");
+      begin(newTimed(Number(v), $("difficulty").value, board().recent));
+    } catch {
+      message = "\u79CD\u5B50\u987B\u4E3A0\u81F34294967295\u6574\u6570\uFF1B\u672C\u5C40\u4ECD\u4FDD\u7559\u3002";
+      render();
+    }
+  };
+  $("next").onclick = () => {
+    if (run().status === "won" && !moving) fresh(board().difficulty);
+  };
+  $("harder").onclick = () => {
+    if (run().status === "won" && board().difficulty !== "hard") fresh(board().difficulty === "easy" ? "normal" : "hard");
+  };
+  canvas.addEventListener("pointerdown", (e) => {
+    if (paused || moving || consequence || !e.isPrimary || e.button !== 0 || ["won", "failed"].includes(run().status)) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect(), gx = Math.floor(((e.clientX - rect.left) * 360 / rect.width - 24) / 52), gy = Math.floor(((e.clientY - rect.top) * 384 / rect.height - 58) / 52);
+    const c = remaining(level(), state()).find((c2) => gx >= c2.x && gy >= c2.y && gx < c2.x + ("EW".includes(c2.direction) ? c2.length : 1) && gy < c2.y + ("NS".includes(c2.direction) ? c2.length : 1));
+    if (!c) return;
+    sound.play("tap");
+    sync();
+    const block = obstruction(level(), state(), c.id);
+    if (block) {
+      message = `${c.id} \u6682\u4E0D\u80FD\u8D70\uFF1A${block}\u3002\u4E0D\u6263\u673A\u4F1A\u3002`;
+      highlight = c.id;
+      shake = { id: c.id, start: Date.now() };
+      sound.play("blocked");
+      render();
+      return;
+    }
+    const before = state(), r = run();
+    if (r.status === "idle") r.status = "running";
+    clock.sync(r, performance.now(), !paused);
+    const fault = test ? canvas.dataset.solverFault : void 0;
+    const verdict = attempt(level(), before, r, c.id, fault === "throw" ? () => {
+      throw Error("test fault");
+    } : fault === "timeout" ? () => ({ kind: "unknown", reason: "timeout" }) : judge);
+    clock.sync(r, performance.now(), !paused);
+    if (verdict.kind === "unknown") {
+      message = "\u6C42\u89E3\u9A8C\u8BC1\u6682\u4E0D\u53EF\u7528\uFF0C\u672C\u6B65\u672A\u6267\u884C\uFF1B\u4E0D\u6263\u673A\u4F1A\u3001\u4E0D\u52A0\u7F5A\u65F6\uFF0C\u8BF7\u91CD\u8BD5\u3002";
+      persist();
+      render();
+      return;
+    }
+    if (verdict.kind === "blocked" || verdict.kind === "inactive") return;
+    sound.play(c.id === level().boss?.id ? "boss" : c.id === "L" && trigger(c.id) ? "key2" : trigger(c.id) ? "key" : "exit");
+    const h = "EW".includes(c.direction), x = 24 + c.x * 52 + 4, y = 58 + c.y * 52 + 4, w = (h ? 2 : 1) * 52 - 8, ht = (h ? 1 : 2) * 52 - 8;
+    moving = { car: c, start: Date.now(), before, distance: { E: 24 + 312 - x + 4, W: x + w - 24 + 4, S: 58 + 312 - y + 4, N: y + ht - 58 + 4 }[c.direction] };
+    if (verdict.kind === "error") {
+      const victims = trapped(level(), verdict.consequence);
+      r.lastError = `${c.id} \u79BB\u573A\u843D\u95F8\uFF0C${victims.join("\u3001") || "\u540E\u7EED\u8F66\u8F86"} \u65E0\u6CD5\u5B8C\u6574\u901A\u5173\u3002\u5DF2\u81EA\u52A8\u64A4\u9500\u672C\u6B65\uFF0C\u4FDD\u7559\u6B64\u524D\u8FDB\u5EA6\u3002+10\u79D2\uFF0C\u5269\u4F59${3 - r.errors}\u6B21\u3002`;
+      message = r.lastError;
+      consequence = verdict.consequence;
+      errorUntil = Date.now() + 1050;
+      highlight = victims[0] || c.id;
+      sound.play("trapped");
+    } else {
+      board().progress.removed = verdict.state.removed;
+      r.lastError = "";
+      message = "\u7EE7\u7EED\u89C2\u5BDF\u8F66\u5934\u3001\u95F8\u4F4D\u548C\u540D\u5355\u3002";
+      highlight = "";
+    }
+    persist();
+    render();
+  });
+  $("restart").onclick = () => begin(newTimed(board().seed, board().difficulty, board().recent));
+  $("hint").onclick = () => {
+    if (["failed", "won"].includes(run().status) || moving || consequence) return;
+    sync();
+    const v = judge(level(), state());
+    run().hints = Math.min(9999, run().hints + 1);
+    highlight = v.kind === "solvable" ? v.path[0] || "" : "";
+    message = highlight ? `\u514D\u8D39\u63D0\u793A\uFF1A\u5148\u70B9 ${highlight}\u3002\u672C\u5C40\u6210\u7EE9\u6807\u8BB0\u4E3A\u4F7F\u7528\u8FC7\u63D0\u793A\u3002` : "\u63D0\u793A\u6682\u4E0D\u53EF\u7528\uFF0C\u4E0D\u6263\u673A\u4F1A\u3002";
+    persist();
+    render();
+  };
+  function lifecycle(hidden) {
+    clock.sync(run(), performance.now(), !hidden);
+    paused = hidden;
+    if (hidden) sound.pause();
+    cancel();
+    persist();
+    render();
+  }
+  document.addEventListener("visibilitychange", () => lifecycle(document.hidden));
+  document.addEventListener("freeze", () => lifecycle(true));
+  document.addEventListener("resume", () => lifecycle(document.hidden));
+  window.addEventListener("pagehide", () => lifecycle(true));
+  window.addEventListener("pageshow", () => lifecycle(document.hidden));
+  $("feedback").onclick = () => $("form").showModal();
+  $("closeFeedback").onclick = () => $("form").close();
+  $("export").onclick = () => {
+    $("exportText").value = [`\u6536\u5DE5\u843D\u95F8\xB7\u8BA1\u65F6\u6311\u6218T1`, `${names[board().difficulty]} \xB7 \u79CD\u5B50${board().seed}`, `\u5B9E\u9645${formatTime(run().elapsedMs)} / \u7F5A\u65F6${run().penaltyMs / 1e3}s / \u9519\u8BEF${run().errors} / \u63D0\u793A${run().hints}`, `\u6765\u6E90\uFF1A${test ? "\u81EA\u52A8\u6D4B\u8BD5\uFF08\u4E0D\u8BA1\u771F\u4EBA\uFF09" : "\u672C\u673A\u8BB0\u5F55\uFF0C\u672A\u6838\u5B9E\u771F\u4EBA"}`, ...["understand", "again", "stuck", "feeling"].map((id) => `${id}\uFF1A${$(id).value}`), "\u4EC5\u672C\u673A\uFF0C\u672A\u81EA\u52A8\u4E0A\u4F20"].join("\n");
+    $("exportBox").hidden = false;
+  };
+  $("copy").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText($("exportText").value);
+      $("copied").textContent = "\u5DF2\u590D\u5236\u3002";
+    } catch {
+      $("exportText").select();
+      $("copied").textContent = "\u8BF7\u9009\u62E9\u6587\u672C\u81EA\u884C\u590D\u5236\u3002";
+    }
+  };
+  if (run().lastError) message = run().lastError;
+  $("difficulty").value = board().difficulty;
+  $("seed").value = String(board().seed);
+  persist();
+  tick();
+})();
+</script></html>
