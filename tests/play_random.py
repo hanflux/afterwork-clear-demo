@@ -40,7 +40,7 @@ with sync_playwright() as p:
         for i in range(count):
             page.locator("#hint").click()
             status=page.locator("#status").inner_text()
-            match=re.search(r"先点\\s*([A-Z])",status)
+            match=re.search("先点\\s*([A-Z])",status)
             assert match, f"{difficulty}: hint cannot direct next move: {status}"
             car=next(c for c in session(page)["level"]["cars"] if c["id"]==match.group(1))
             click_car(page,car)
