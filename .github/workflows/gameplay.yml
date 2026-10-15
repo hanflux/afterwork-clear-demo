@@ -5,6 +5,7 @@ on:
       - 'parking/**'
       - 'enhanced/**'
       - 'challenge/**'
+      - 'random/**'
       - 'tests/play_enhanced.py'
       - 'tests/play_game.py'
       - '.github/workflows/gameplay.yml'
