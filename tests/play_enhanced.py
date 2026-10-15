@@ -37,7 +37,7 @@ def tap(page,c):
  x=24+(c["x"]+(c["length"]/2 if hor else .5))*52
  y=58+(c["y"]+(.5 if hor else c["length"]/2))*52
  page.mouse.click(b["x"]+x*b["width"]/360,b["y"]+y*b["height"]/384)
- page.wait_for_timeout(310)
+ page.wait_for_function("!['exiting','gate-closing'].includes(document.querySelector('#board').dataset.phase)")
 def save(page):
  return page.evaluate("(key)=>JSON.parse(localStorage.getItem(key))",KEY)
 with sync_playwright() as p:
@@ -68,7 +68,7 @@ with sync_playwright() as p:
   if not blockers(l,frozenset(),next(c for c in l["cars"] if c["id"]=="K")) and trapped(l,frozenset({"K"})):
    page.select_option("#choose",str(n))
    tap(page,next(c for c in l["cars"] if c["id"]=="K"))
-   assert "请重开" in page.locator("#status").inner_text()
+   assert "免费重开" in page.locator("#status").inner_text()
    page.locator("#restart").click()
    assert not save(page)["removed"]
    print(f"PASS wrong-order trapped/restart at level {n+1}",flush=True)

@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>收工落闸 · 十关试玩</title><style>*{box-sizing:border-box}body{margin:0;background:#10202a;color:#f3f0e7;font:15px system-ui,sans-serif}.shell{max-width:420px;margin:auto;padding:14px 12px}h1{margin:0 0 6px;font-size:25px;color:#f2cf7a}p{margin:7px 0;line-height:1.45}#stage{color:#bad4d8;font-size:13px;min-height:38px}canvas{width:100%;height:auto;touch-action:none;display:block;border-radius:10px}#status{min-height:49px;padding:9px;border:1px solid #637e86;border-radius:8px;background:#213944}.failure{color:#ffb7b7!important;border-color:#e1787c!important}.success{color:#b8eed6!important}button,select{min-height:46px;border:1px solid #637e86;border-radius:8px;background:#2c4652;color:inherit;font:16px system-ui;padding:8px;touch-action:manipulation}button:disabled{opacity:.45}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}#next{background:#dfbc68;color:#172a30}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:13px;color:#c7d8d9}summary{padding:8px 0}#progress,#storage{font-size:12px;color:#a8c3c8}dialog{max-width:min(94vw,420px);border:1px solid #78949b;border-radius:12px;background:#17313d;color:#fff;padding:18px}dialog::backdrop{background:#000a}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#10202a;color:#fff;margin:8px 0}#choose{width:100%}</style><main class="shell"><h1>收工落闸</h1><p>K 走 → 闸落下。先送还要过闸的车。</p><details><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。黄色钥匙车 K 离场后，标出的道闸永久落下。若还有车必须过闸，会被困住，可免费重开。不是倒计时，不会随机落闸。</details><h2 id="levelTitle" style="font-size:17px;margin:8px 0"></h2><p id="stage"></p><canvas id="board" aria-label="停车棋盘：点击车辆沿车头离场，黄色K触发道闸"></canvas><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">重开</button><button id="hint">免费提示</button><button id="next">自主下一关</button></div><p id="progress"></p><p id="storage"></p><label>选关（试玩可自由比较）<select id="choose"></select></label><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p style="font-size:12px;color:#a8c3c8">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>卡在哪关？<select id="stuck" data-label="卡关"><option>没有</option><option>第1关</option><option>第2关</option><option>第3关</option><option>第4关</option><option>第5关</option><option>第6关</option><option>第7关</option><option>第8关</option><option>第9关</option><option>第10关</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 收工落闸</title><style>*{box-sizing:border-box}body{margin:0;background:#10202a;color:#f3f0e7;font:15px system-ui,sans-serif}.shell{max-width:420px;margin:auto;padding:8px}h1{margin:0 0 3px;font-size:23px;color:#f2cf7a}p{margin:5px 0;line-height:1.45}#stage{color:#bad4d8;font-size:13px;min-height:32px}canvas{width:min(100%,360px);height:auto;margin:auto;touch-action:none;overscroll-behavior:contain;display:block;border-radius:10px}#status{min-height:60px;padding:9px;border:1px solid #637e86;border-radius:8px;background:#213944}.failure{color:#ffb7b7!important;border-color:#e1787c!important}.success{color:#b8eed6!important}button,select{min-height:46px;border:1px solid #637e86;border-radius:8px;background:#2c4652;color:inherit;font:16px system-ui;padding:8px;touch-action:manipulation}button:disabled{opacity:.45}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}button:active{transform:translateY(1px);filter:brightness(1.2)}button:focus-visible,select:focus-visible{outline:3px solid #fff}.urgent{background:#f7bd8a;border:2px solid #ffefbd;color:#301f18;box-shadow:0 0 0 2px #ed7f7133}.success{background:#205344!important;border-color:#86d5af!important}#next{background:#dfbc68;color:#172a30}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:13px;color:#c7d8d9}summary{padding:8px 0}#progress,#storage{font-size:12px;color:#a8c3c8}dialog{max-width:min(94vw,420px);border:1px solid #78949b;border-radius:12px;background:#17313d;color:#fff;padding:18px}dialog::backdrop{background:#000a}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#10202a;color:#fff;margin:8px 0}#choose{width:100%}@media(max-height:700px){h1{font-size:20px}#stage{min-height:0;font-size:12px;margin:3px 0}#levelTitle{margin:4px 0!important}#status{font-size:14px}}</style><main class="shell"><h1>别堵着下班</h1><p style="font-size:13px;margin:3px 0">收工落闸 · 黄色 K 离场 → 闸落下</p><h2 id="levelTitle" style="font-size:17px;margin:8px 0"></h2><p id="stage"></p><canvas id="board" aria-label="停车棋盘：点击车辆沿车头离场，黄色K触发道闸"></canvas><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">免费重开</button><button id="hint">免费提示</button><button id="next">下一关 →</button></div><p id="progress"></p><p id="storage"></p><details id="rules"><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。黄色钥匙车 K 离场后，标出的道闸永久落下。若还有车必须过闸，会被困住，可免费重开。不是倒计时，不会随机落闸。</details><label>选关（试玩可自由比较）<select id="choose"></select></label><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p style="font-size:12px;color:#a8c3c8">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>卡在哪关？<select id="stuck" data-label="卡关"><option>没有</option><option>第1关</option><option>第2关</option><option>第3关</option><option>第4关</option><option>第5关</option><option>第6关</option><option>第7关</option><option>第8关</option><option>第9关</option><option>第10关</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
 (() => {
   // levels/enhanced.json
   var enhanced_default = [
@@ -702,6 +702,8 @@
   var highlight = "";
   var paused = false;
   var timer;
+  var exitMs = 260;
+  var gateMs = 340;
   var moving = null;
   var events = [];
   try {
@@ -751,8 +753,10 @@
     ctx.beginPath();
     ctx.roundRect(-len / 2, -22, len, 44, 7);
     ctx.fill();
-    ctx.strokeStyle = c.id === highlight ? "#fff" : "#ffffff44";
-    ctx.lineWidth = c.id === highlight ? 4 : 1;
+    const victim = trapped(level(), state()).includes(c.id);
+    const teaching = save.current === 0 && !moving && !highlight && c.id === (save.removed.includes("A") ? save.removed.includes("K") ? "B" : "K" : "A");
+    ctx.strokeStyle = victim ? "#ff7e83" : c.id === highlight || teaching ? "#fff" : "#ffffff44";
+    ctx.lineWidth = victim || c.id === highlight || teaching ? 4 : 1;
     ctx.stroke();
     ctx.fillStyle = "#254253";
     ctx.fillRect(len / 2 - 28, -14, 9, 28);
@@ -789,16 +793,16 @@
     }
     const visual = moving ? moving.before : s;
     for (const g of l.gates) {
-      const x = ox + g.x * 52 + 4, y = oy + g.y * 52 + 4, isClosed = closed(g, visual);
+      const x = ox + g.x * 52 + 4, y = oy + g.y * 52 + 4, isClosed = closed(g, visual), dropping = moving?.car.id === g.trigger ? Math.max(0, Math.min(1, (Date.now() - moving.start - exitMs) / gateMs)) : isClosed ? 1 : 0;
       ctx.fillStyle = isClosed ? "#652f3a" : "#4a422f";
       ctx.fillRect(x, y, 44, 44);
       ctx.strokeStyle = isClosed ? "#ff7e83" : "#f3cf76";
       ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(x + 6, y + 23);
-      ctx.lineTo(x + (isClosed ? 38 : 32), y + (isClosed ? 23 : 5));
+      ctx.lineTo(x + 32 + dropping * 6, y + 5 + dropping * 18);
       ctx.stroke();
-      text(isClosed ? "\u95F8\u5DF2\u843D" : "K\u8D70\u95F8\u843D", x + 22, y + 41, 9, "#fff1d1", "center");
+      text(dropping > 0 && dropping < 1 ? "\u6B63\u5728\u843D\u95F8" : isClosed ? "\u95F8\u5DF2\u843D" : "K\u8D70\u95F8\u843D", x + 22, y + 41, 9, "#fff1d1", "center");
     }
     ctx.save();
     ctx.beginPath();
@@ -806,14 +810,19 @@
     ctx.clip();
     for (const c of remaining(l, s)) car(c);
     if (moving) {
-      const t = Math.min(1, (Date.now() - moving.start) / 260);
+      const t = Math.min(1, (Date.now() - moving.start) / exitMs);
       car(moving.car, moving.distance * (1 - (1 - t) ** 2));
     }
     ctx.restore();
-    const status = paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : moving ? moving.car.id === "K" ? "K \u6B63\u5728\u6536\u5DE5\u79BB\u573A\uFF0C\u968F\u540E\u843D\u95F8\u2026\u2026" : `${moving.car.id} \u6B63\u5728\u79BB\u573A\u2026\u2026` : victims.length ? `\u95F8\u5DF2\u843D\uFF0C${victims.join("\u3001")} \u8FD8\u8981\u8FC7\u8FD9\u91CC\u3002\u8BF7\u91CD\u5F00\u672C\u5173\u3002` : done ? "\u6E05\u573A\u5B8C\u6210\uFF01\u8981\u4E0D\u8981\u81EA\u5DF1\u8BD5\u4E0B\u4E00\u5173\uFF1F" : message;
-    $("next").textContent = save.current === levels.length - 1 ? "\u5B8C\u6210\xB7\u7ED9\u53CD\u9988" : "\u81EA\u4E3B\u4E0B\u4E00\u5173";
+    const lesson = save.current === 0 ? !s.removed.includes("A") ? "\u70B9\u767D\u6846 A\uFF0C\u6CBF\u7BAD\u5934\u79BB\u573A\uFF1B\u4E0D\u7528\u62D6\u52A8\u3002" : !s.removed.includes("K") ? "A \u5DF2\u8FC7\u95F8\u3002\u70B9\u9EC4\u8272 K\uFF0C\u770B\u9053\u95F8\u843D\u4E0B\u3002" : "\u95F8\u5DF2\u843D\uFF1BB \u4E0D\u7ECF\u8FC7\u95F8\uFF0C\u70B9 B \u5C31\u80FD\u6E05\u573A\u3002" : message;
+    const status = paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : moving ? moving.car.id === "K" ? Date.now() - moving.start < exitMs ? "K \u6B63\u5728\u79BB\u573A\uFF0C\u968F\u540E\u843D\u95F8\u2026\u2026" : "\u9053\u95F8\u6B63\u5728\u843D\u4E0B\u2026\u2026" : `${moving.car.id} \u6B63\u5728\u79BB\u573A\u2026\u2026` : victims.length ? `\u95F8\u5DF2\u843D\uFF0C${victims.join("\u3001")} \u88AB\u9053\u95F8\u56F0\u4F4F\uFF1A\u5B83\u8FD8\u8981\u7ECF\u8FC7\u95F8\u4F4D\u3002\u70B9\u300C\u514D\u8D39\u91CD\u5F00\u300D\u518D\u8BD5\u3002` : done ? "\u6E05\u573A\u5B8C\u6210\uFF01\u4E0B\u73ED\u5566 \u2713 \u70B9\u300C\u4E0B\u4E00\u5173\u300D\u7EE7\u7EED\u3002" : highlight ? message : lesson;
+    $("next").textContent = save.current === levels.length - 1 ? "\u5B8C\u6210\xB7\u7ED9\u53CD\u9988" : "\u4E0B\u4E00\u5173 \u2192";
     $("status").textContent = status;
     $("status").className = victims.length && !moving ? "failure" : done ? "success" : "";
+    $("restart").classList.toggle("urgent", victims.length > 0 && !moving);
+    $("restart").textContent = "\u514D\u8D39\u91CD\u5F00";
+    canvas.dataset.phase = moving ? moving.car.id === "K" && Date.now() - moving.start >= exitMs ? "gate-closing" : "exiting" : victims.length ? "trapped" : done ? "complete" : "ready";
+    canvas.dataset.trapped = victims.join(",");
     $("next").disabled = !done || Boolean(moving);
     $("hint").disabled = Boolean(moving);
     $("progress").textContent = `\u5DF2\u5B8C\u6210 ${save.completed.length}/${levels.length} \u5173 \xB7 \u65E0\u5012\u8BA1\u65F6 \xB7 \u91CD\u5F00\u4E0D\u6263\u8D44\u6E90`;
@@ -827,7 +836,7 @@
   function frame() {
     timer = void 0;
     if (paused) return;
-    if (moving && Date.now() - moving.start >= 260) {
+    if (moving && Date.now() - moving.start >= exitMs + (moving.car.id === "K" ? gateMs : 0)) {
       moving = null;
       message = won(level(), state()) ? "\u6E05\u573A\u5B8C\u6210" : remaining(level(), state()).length ? "\u7EE7\u7EED\u89C2\u5BDF\u8C01\u8981\u8FC7\u95F8" : "";
     }
@@ -890,7 +899,7 @@
       if (save.current < levels.length - 1) choose(save.current + 1, "next_level");
       else {
         message = "\u5341\u5173\u4F53\u9A8C\u5B8C\u6210\uFF0C\u6B22\u8FCE\u7559\u4E0B\u672C\u673A\u53CD\u9988\u3002";
-        $("feedback").scrollIntoView({ behavior: "smooth" });
+        $("form").showModal();
         render();
       }
     }
