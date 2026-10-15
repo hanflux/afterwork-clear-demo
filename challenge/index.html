@@ -1,8 +1,8 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 挑战试验 M1</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f0e5;color:#304e59;font:15px system-ui,sans-serif;background-image:radial-gradient(#d9e5d6 1px,transparent 1px);background-size:18px 18px}.shell{max-width:420px;margin:auto;padding:8px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{margin:0;font-size:23px;letter-spacing:-1px;color:#355b60}#sound{min-height:36px;padding:5px 9px;font-size:12px;white-space:nowrap;background:#e1eadd;border-color:#c7d7c6;box-shadow:none}p{margin:5px 0;line-height:1.4}.mode{font-size:12px;color:#789185;margin:2px 0 7px}#levelTitle{font-size:17px;margin:6px 0 2px}#stage{font-size:12px;color:#6a817a;min-height:30px}canvas{width:min(100%,360px);height:auto;margin:auto;touch-action:none;overscroll-behavior:contain;display:block;border-radius:18px;box-shadow:0 5px 0 #c3d3c388,0 8px 15px #354f4d12}#status{min-height:60px;padding:9px 11px;border:1px solid #d8dfcf;border-radius:13px;background:#fffcf2;color:#496661;font-size:14px;box-shadow:0 2px 0 #dedfce}.failure{background:#fff0df!important;color:#a35244!important;border-color:#e2a586!important}.success{background:#dfeddb!important;color:#3d7564!important;border-color:#a9c8ac!important}button,select{min-height:46px;border:1px solid #bbcebf;border-radius:13px;background:#e7eee2;color:#385e5c;font:600 15px system-ui;padding:8px;touch-action:manipulation;box-shadow:0 3px 0 #c2d2bf}button:disabled{opacity:.45;box-shadow:none}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}button:active{transform:translateY(2px);box-shadow:none;filter:brightness(.97)}button:focus-visible,select:focus-visible{outline:3px solid #e6aa58;outline-offset:2px}#next{background:#efbd6b;border-color:#dca858;color:#674e25;box-shadow:0 3px 0 #d5a151}.urgent{background:#f8c49b;border:2px solid #d98766;color:#74462e;box-shadow:0 3px 0 #df9a72}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:12px;color:#72847b}summary{padding:8px 0}#progress,#storage{font-size:11px;color:#7c9185}dialog{max-width:min(94vw,420px);max-height:90svh;overflow:auto;border:1px solid #bacfbc;border-radius:20px;background:#faf8ed;color:#385e5c;padding:18px;box-shadow:0 16px 70px #23423844}dialog::backdrop{background:#223f4266}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#fffdf5;color:#385e5c;border:1px solid #bacfbc;border-radius:8px;margin:8px 0}#choose{width:100%}#feedback{width:100%;background:#f6f3e8;box-shadow:none}.privacy{font-size:11px;color:#7c9185}.secondary{border-top:1px solid #d7dfd0;margin-top:9px;padding-top:3px}@media(max-height:700px){header h1{font-size:20px}#stage{min-height:0;font-size:11px;margin:2px 0}#levelTitle{margin:3px 0!important}.mode{margin:0 0 2px}#status{font-size:13px}.shell{padding-top:5px}#sound{min-height:32px}}
-</style><main class="shell"><header><h1>别堵着下班</h1><button id="sound" aria-label="切换音效" aria-pressed="true">♪ 音效开</button></header><p class="mode">挑战试验 M1 · 先看依赖，再选收工窗口</p><h2 id="levelTitle"></h2><p id="stage"></p><canvas id="board" aria-label="停车棋盘：点击车辆沿车头离场，黄色K触发道闸"></canvas><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">免费重开</button><button id="hint">免费提示</button><button id="next">下一关 →</button></div><p id="progress"></p><p id="storage"></p><section class="secondary"><details id="rules"><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。黄色钥匙车 K 离场后，标出的道闸永久落下。若还有车必须过闸，会被困住，可免费重开。不是倒计时，不会随机落闸。</details><label>选关（试玩可自由比较）<select id="choose"></select></label><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p class="privacy">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></section></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>卡在哪关？<select id="stuck" data-label="卡关"><option>没有</option><option>第1关</option><option>第2关</option><option>第3关</option><option>第4关</option><option>第5关</option><option>第6关</option><option>第7关</option><option>第8关</option><option>第9关</option><option>第10关</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 事件试验 M2</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f0e5;color:#304e59;font:15px system-ui,sans-serif;background-image:radial-gradient(#d9e5d6 1px,transparent 1px);background-size:18px 18px}.shell{max-width:420px;margin:auto;padding:8px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{margin:0;font-size:23px;letter-spacing:-1px;color:#355b60}#sound{min-height:36px;padding:5px 9px;font-size:12px;white-space:nowrap;background:#e1eadd;border-color:#c7d7c6;box-shadow:none}p{margin:5px 0;line-height:1.4}.mode{font-size:12px;color:#789185;margin:2px 0 7px}#levelTitle{font-size:17px;margin:6px 0 2px}#stage{font-size:12px;color:#6a817a;min-height:30px}canvas{width:min(100%,360px);height:auto;margin:auto;touch-action:none;overscroll-behavior:contain;display:block;border-radius:18px;box-shadow:0 5px 0 #c3d3c388,0 8px 15px #354f4d12}#status{min-height:60px;padding:9px 11px;border:1px solid #d8dfcf;border-radius:13px;background:#fffcf2;color:#496661;font-size:14px;box-shadow:0 2px 0 #dedfce}.failure{background:#fff0df!important;color:#a35244!important;border-color:#e2a586!important}.success{background:#dfeddb!important;color:#3d7564!important;border-color:#a9c8ac!important}button,select{min-height:46px;border:1px solid #bbcebf;border-radius:13px;background:#e7eee2;color:#385e5c;font:600 15px system-ui;padding:8px;touch-action:manipulation;box-shadow:0 3px 0 #c2d2bf}button:disabled{opacity:.45;box-shadow:none}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}button:active{transform:translateY(2px);box-shadow:none;filter:brightness(.97)}button:focus-visible,select:focus-visible{outline:3px solid #e6aa58;outline-offset:2px}#next{background:#efbd6b;border-color:#dca858;color:#674e25;box-shadow:0 3px 0 #d5a151}.urgent{background:#f8c49b;border:2px solid #d98766;color:#74462e;box-shadow:0 3px 0 #df9a72}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:12px;color:#72847b}summary{padding:8px 0}#progress,#storage{font-size:11px;color:#7c9185}dialog{max-width:min(94vw,420px);max-height:90svh;overflow:auto;border:1px solid #bacfbc;border-radius:20px;background:#faf8ed;color:#385e5c;padding:18px;box-shadow:0 16px 70px #23423844}dialog::backdrop{background:#223f4266}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#fffdf5;color:#385e5c;border:1px solid #bacfbc;border-radius:8px;margin:8px 0}#choose{width:100%}#feedback{width:100%;background:#f6f3e8;box-shadow:none}.privacy{font-size:11px;color:#7c9185}.secondary{border-top:1px solid #d7dfd0;margin-top:9px;padding-top:3px}@media(max-height:700px){header h1{font-size:20px}#stage{min-height:0;font-size:11px;margin:2px 0}#levelTitle{margin:3px 0!important}.mode{margin:0 0 2px}#status{font-size:13px}.shell{padding-top:5px}#sound{min-height:32px}}
+</style><main class="shell"><header><h1>别堵着下班</h1><button id="sound" aria-label="切换音效" aria-pressed="true">♪ 音效开</button></header><p class="mode">事件试验 M2 · K① / L② · 老板要等本区员工</p><h2 id="levelTitle"></h2><p id="stage"></p><canvas id="board" aria-label="事件停车棋盘：黄色钥匙K触发①闸，蓝色菱形L触发②闸，皇冠老板B等待名单员工离场"></canvas><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">免费重开</button><button id="hint">免费提示</button><button id="next">下一关 →</button></div><p id="progress"></p><p id="storage"></p><section class="secondary"><details id="rules"><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。黄色钥匙K离场关闭①闸，蓝色菱形L离场关闭②闸；每道闸标出触发身份。戴皇冠的老板B必须等关卡上方名单中的员工全走，才可离场；其他后勤车可能要等老板腾路。若还有车必须过闸，会被困住，可免费重开。不是倒计时，不会随机落闸。</details><label>选关（试玩可自由比较）<select id="choose"></select></label><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p class="privacy">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></section></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>卡在哪关？<select id="stuck" data-label="卡关"><option>没有</option><option>第1关</option><option>第2关</option><option>第3关</option><option>第4关</option><option>第5关</option><option>第6关</option><option>第7关</option><option>第8关</option><option>第9关</option><option>第10关</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
 (() => {
-  // levels/challenge.json
-  var challenge_default = [
+  // levels/events.json
+  var events_default = [
     {
       level_id: "overtime-1",
       schema_version: 1,
@@ -256,464 +256,390 @@
       height: 6,
       cars: [
         {
-          x: 0,
-          y: 4,
+          x: 2,
+          y: 2,
           length: 2,
-          direction: "E",
+          direction: "W",
           id: "A"
         },
         {
-          x: 3,
-          y: 4,
-          length: 2,
-          direction: "E",
-          id: "B"
-        },
-        {
-          x: 0,
+          x: 5,
           y: 0,
           length: 2,
-          direction: "E",
-          id: "C"
+          direction: "S",
+          id: "L"
         },
         {
-          x: 4,
-          y: 0,
+          x: 1,
+          y: 3,
           length: 2,
-          direction: "N",
+          direction: "S",
           id: "D"
         },
         {
-          x: 2,
-          y: 3,
-          length: 2,
-          direction: "N",
-          id: "E"
-        },
-        {
           x: 3,
-          y: 3,
-          length: 2,
-          direction: "E",
-          id: "F"
-        },
-        {
-          x: 5,
-          y: 2,
-          length: 2,
-          direction: "S",
-          id: "G"
-        },
-        {
-          x: 3,
-          y: 0,
-          length: 2,
-          direction: "N",
-          id: "H"
-        },
-        {
-          x: 5,
-          y: 4,
-          length: 2,
-          direction: "S",
-          id: "K"
-        }
-      ],
-      gates: [
-        {
-          x: 2,
-          y: 0,
-          trigger: "K"
-        }
-      ],
-      schema_version: 1,
-      seed: 5343,
-      solution: [],
-      level_id: "challenge-5",
-      title: "\u6536\u5DE5\u7A97\u53E3",
-      stage: "\u4E2D\u7B49\u7ED3\u6784",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
-    },
-    {
-      width: 6,
-      height: 6,
-      cars: [
-        {
-          x: 3,
-          y: 0,
-          length: 2,
-          direction: "S",
-          id: "A"
-        },
-        {
-          x: 4,
           y: 1,
           length: 2,
-          direction: "S",
-          id: "B"
-        },
-        {
-          x: 0,
-          y: 4,
-          length: 2,
-          direction: "S",
-          id: "C"
-        },
-        {
-          x: 0,
-          y: 3,
-          length: 2,
-          direction: "E",
-          id: "D"
-        },
-        {
-          x: 2,
-          y: 0,
-          length: 2,
-          direction: "S",
+          direction: "W",
           id: "E"
         },
         {
-          x: 3,
-          y: 5,
+          x: 2,
+          y: 4,
           length: 2,
           direction: "W",
           id: "F"
-        },
-        {
-          x: 1,
-          y: 2,
-          length: 2,
-          direction: "W",
-          id: "G"
-        },
-        {
-          x: 3,
-          y: 4,
-          length: 2,
-          direction: "E",
-          id: "H"
-        },
-        {
-          x: 5,
-          y: 3,
-          length: 2,
-          direction: "S",
-          id: "K"
-        },
-        {
-          x: 0,
-          y: 0,
-          length: 2,
-          direction: "N",
-          id: "J"
-        }
-      ],
-      gates: [
-        {
-          x: 2,
-          y: 5,
-          trigger: "K"
-        }
-      ],
-      schema_version: 1,
-      seed: 98935,
-      solution: [],
-      level_id: "challenge-6",
-      title: "\u5148\u817E\u8DEF\uFF0C\u518D\u7559\u95F8",
-      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
-    },
-    {
-      width: 6,
-      height: 6,
-      cars: [
-        {
-          x: 0,
-          y: 4,
-          length: 2,
-          direction: "E",
-          id: "A"
-        },
-        {
-          x: 1,
-          y: 0,
-          length: 2,
-          direction: "W",
-          id: "K"
         },
         {
           x: 4,
-          y: 2,
+          y: 4,
           length: 2,
-          direction: "W",
-          id: "C"
+          direction: "E",
+          id: "K"
         },
         {
           x: 2,
-          y: 2,
+          y: 3,
           length: 2,
-          direction: "N",
-          id: "D"
-        },
-        {
-          x: 5,
-          y: 4,
-          length: 2,
-          direction: "S",
-          id: "E"
-        },
-        {
-          x: 3,
-          y: 0,
-          length: 2,
-          direction: "W",
-          id: "F"
+          direction: "E",
+          id: "H"
         },
         {
           x: 1,
           y: 1,
           length: 2,
-          direction: "E",
-          id: "G"
-        },
-        {
-          x: 3,
-          y: 3,
-          length: 2,
           direction: "S",
-          id: "H"
-        },
-        {
-          x: 4,
-          y: 3,
-          length: 2,
-          direction: "W",
           id: "I"
         },
         {
-          x: 2,
-          y: 5,
-          length: 2,
-          direction: "W",
-          id: "J"
-        },
-        {
           x: 0,
-          y: 0,
+          y: 2,
           length: 2,
           direction: "N",
-          id: "Z"
+          id: "B"
+        },
+        {
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "U"
         }
       ],
       gates: [
         {
-          x: 4,
-          y: 4,
+          x: 2,
+          y: 1,
           trigger: "K"
+        },
+        {
+          x: 0,
+          y: 1,
+          trigger: "L"
         }
       ],
       schema_version: 1,
-      seed: 4360,
+      seed: 216,
       solution: [],
-      level_id: "challenge-7",
-      title: "\u4EA4\u9519\u4EA4\u63A5",
-      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+      boss: {
+        id: "B",
+        after: [
+          "D",
+          "E",
+          "F",
+          "H",
+          "I",
+          "U"
+        ]
+      },
+      level_id: "events-5",
+      title: "\u8001\u677F\u7684\u4EA4\u63A5\u73ED",
+      stage: "\u4E8B\u4EF6\u8BD5\u9A8C\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677F B \u987B\u7B49 D\u3001E\u3001F\u3001H\u3001I\u3001U \u5148\u8D70\uFF1BK/L \u5404\u5173\u4E00\u9053\u95F8\u3002"
     },
     {
       width: 6,
       height: 6,
       cars: [
         {
-          x: 1,
-          y: 2,
+          x: 4,
+          y: 3,
           length: 2,
-          direction: "W",
+          direction: "E",
           id: "A"
         },
         {
-          x: 2,
-          y: 4,
+          x: 4,
+          y: 2,
           length: 2,
-          direction: "N",
-          id: "B"
-        },
-        {
-          x: 1,
-          y: 4,
-          length: 2,
-          direction: "N",
+          direction: "E",
           id: "C"
         },
         {
-          x: 1,
-          y: 0,
+          x: 2,
+          y: 3,
           length: 2,
-          direction: "E",
+          direction: "N",
           id: "D"
-        },
-        {
-          x: 4,
-          y: 0,
-          length: 2,
-          direction: "E",
-          id: "K"
         },
         {
           x: 5,
           y: 4,
           length: 2,
-          direction: "S",
-          id: "F"
-        },
-        {
-          x: 4,
-          y: 3,
-          length: 2,
           direction: "N",
-          id: "G"
-        },
-        {
-          x: 4,
-          y: 2,
-          length: 2,
-          direction: "W",
-          id: "H"
+          id: "L"
         },
         {
           x: 0,
           y: 4,
+          length: 2,
+          direction: "N",
+          id: "F"
+        },
+        {
+          x: 3,
+          y: 1,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "B"
+        },
+        {
+          x: 1,
+          y: 3,
           length: 2,
           direction: "N",
           id: "I"
         },
         {
-          x: 3,
-          y: 5,
+          x: 1,
+          y: 2,
           length: 2,
           direction: "E",
-          id: "J"
-        },
-        {
-          x: 3,
-          y: 0,
-          length: 2,
-          direction: "S",
-          id: "Z"
+          id: "K"
         }
       ],
       gates: [
         {
           x: 3,
-          y: 2,
+          y: 0,
           trigger: "K"
+        },
+        {
+          x: 1,
+          y: 1,
+          trigger: "L"
         }
       ],
       schema_version: 1,
-      seed: 8658,
+      seed: 229,
       solution: [],
-      level_id: "challenge-8",
-      title: "\u628A\u7A97\u53E3\u7559\u4F4F",
-      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+      boss: {
+        id: "B",
+        after: [
+          "A",
+          "C",
+          "F",
+          "G"
+        ]
+      },
+      level_id: "events-6",
+      title: "\u5148\u7ED9\u8001\u677F\u817E\u8DEF",
+      stage: "\u4E8B\u4EF6\u8BD5\u9A8C\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677F B \u987B\u7B49 A\u3001C\u3001F\u3001G \u5148\u8D70\uFF1BK/L \u5404\u5173\u4E00\u9053\u95F8\u3002"
     },
     {
       width: 6,
       height: 6,
       cars: [
         {
-          x: 5,
-          y: 2,
+          x: 1,
+          y: 0,
           length: 2,
-          direction: "N",
+          direction: "S",
           id: "A"
         },
         {
-          x: 4,
-          y: 1,
+          x: 2,
+          y: 0,
           length: 2,
           direction: "E",
-          id: "B"
-        },
-        {
-          x: 2,
-          y: 4,
-          length: 2,
-          direction: "W",
           id: "C"
-        },
-        {
-          x: 0,
-          y: 4,
-          length: 2,
-          direction: "N",
-          id: "D"
-        },
-        {
-          x: 0,
-          y: 2,
-          length: 2,
-          direction: "E",
-          id: "E"
-        },
-        {
-          x: 2,
-          y: 1,
-          length: 2,
-          direction: "E",
-          id: "F"
         },
         {
           x: 1,
           y: 5,
           length: 2,
           direction: "W",
+          id: "D"
+        },
+        {
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "N",
+          id: "L"
+        },
+        {
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "F"
+        },
+        {
+          x: 5,
+          y: 2,
+          length: 2,
+          direction: "N",
           id: "G"
         },
         {
-          x: 1,
-          y: 3,
+          x: 0,
+          y: 4,
           length: 2,
           direction: "N",
-          id: "H"
+          id: "K"
+        },
+        {
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "B"
+        }
+      ],
+      gates: [
+        {
+          x: 4,
+          y: 0,
+          trigger: "K"
+        },
+        {
+          x: 5,
+          y: 4,
+          trigger: "L"
+        }
+      ],
+      schema_version: 1,
+      seed: 86,
+      solution: [],
+      boss: {
+        id: "B",
+        after: [
+          "C",
+          "F",
+          "G"
+        ]
+      },
+      level_id: "events-7",
+      title: "\u4E24\u6B21\u6536\u5DE5\u7A97\u53E3",
+      stage: "\u4E8B\u4EF6\u8BD5\u9A8C\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677F B \u987B\u7B49 C\u3001F\u3001G \u5148\u8D70\uFF1BK/L \u5404\u5173\u4E00\u9053\u95F8\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "E",
+          id: "A"
         },
         {
           x: 0,
-          y: 0,
+          y: 1,
+          length: 2,
+          direction: "N",
+          id: "B"
+        },
+        {
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "D"
+        },
+        {
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "E"
+        },
+        {
+          x: 2,
+          y: 1,
           length: 2,
           direction: "W",
+          id: "F"
+        },
+        {
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "E",
+          id: "G"
+        },
+        {
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "L"
+        },
+        {
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E",
           id: "I"
         },
         {
           x: 4,
-          y: 0,
+          y: 2,
           length: 2,
-          direction: "W",
-          id: "J"
-        },
-        {
-          x: 0,
-          y: 1,
-          length: 2,
-          direction: "E",
+          direction: "N",
           id: "K"
         }
       ],
       gates: [
         {
-          x: 4,
-          y: 2,
+          x: 3,
+          y: 5,
           trigger: "K"
+        },
+        {
+          x: 1,
+          y: 4,
+          trigger: "L"
         }
       ],
       schema_version: 1,
-      seed: 10994,
+      seed: 402,
       solution: [],
-      level_id: "challenge-9",
-      title: "\u4E24\u7AEF\u90FD\u8981\u770B",
-      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+      boss: {
+        id: "B",
+        after: [
+          "A",
+          "D",
+          "E",
+          "G",
+          "I"
+        ]
+      },
+      level_id: "events-8",
+      title: "\u8001\u677F\u4E0E\u4E24\u9053\u8DEF\u53E3",
+      stage: "\u4E8B\u4EF6\u8BD5\u9A8C\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677F B \u987B\u7B49 A\u3001D\u3001E\u3001G\u3001I \u5148\u8D70\uFF1BK/L \u5404\u5173\u4E00\u9053\u95F8\u3002"
     },
     {
       width: 6,
@@ -721,27 +647,126 @@
       cars: [
         {
           x: 2,
-          y: 5,
+          y: 4,
           length: 2,
-          direction: "E",
-          id: "A"
-        },
-        {
-          x: 3,
-          y: 2,
-          length: 2,
-          direction: "N",
+          direction: "S",
           id: "B"
         },
         {
-          x: 0,
-          y: 0,
+          x: 1,
+          y: 3,
           length: 2,
-          direction: "N",
+          direction: "S",
           id: "C"
         },
         {
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "E",
+          id: "D"
+        },
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "E",
+          id: "L"
+        },
+        {
           x: 4,
+          y: 2,
+          length: 2,
+          direction: "E",
+          id: "F"
+        },
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "H"
+        },
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "I"
+        },
+        {
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "W",
+          id: "J"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "K"
+        }
+      ],
+      gates: [
+        {
+          x: 3,
+          y: 2,
+          trigger: "K"
+        },
+        {
+          x: 1,
+          y: 5,
+          trigger: "L"
+        }
+      ],
+      schema_version: 1,
+      seed: 73,
+      solution: [],
+      boss: {
+        id: "B",
+        after: [
+          "C",
+          "D",
+          "F",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      level_id: "events-9",
+      title: "\u53CC\u95F8\u4EA4\u63A5",
+      stage: "\u4E8B\u4EF6\u8BD5\u9A8C\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677F B \u987B\u7B49 C\u3001D\u3001F\u3001G\u3001H\u3001I \u5148\u8D70\uFF1BK/L \u5404\u5173\u4E00\u9053\u95F8\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "N",
+          id: "A"
+        },
+        {
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "C"
+        },
+        {
+          x: 2,
           y: 2,
           length: 2,
           direction: "E",
@@ -752,65 +777,71 @@
           y: 5,
           length: 2,
           direction: "E",
-          id: "E"
-        },
-        {
-          x: 3,
-          y: 4,
-          length: 2,
-          direction: "E",
-          id: "F"
-        },
-        {
-          x: 0,
-          y: 3,
-          length: 2,
-          direction: "S",
-          id: "G"
+          id: "K"
         },
         {
           x: 2,
           y: 0,
           length: 2,
           direction: "W",
-          id: "H"
-        },
-        {
-          x: 5,
-          y: 4,
-          length: 2,
-          direction: "N",
-          id: "K"
+          id: "B"
         },
         {
           x: 1,
-          y: 4,
+          y: 1,
           length: 2,
-          direction: "E",
-          id: "J"
+          direction: "W",
+          id: "G"
+        },
+        {
+          x: 5,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "L"
+        },
+        {
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "I"
         },
         {
           x: 0,
-          y: 2,
+          y: 0,
           length: 2,
-          direction: "E",
-          id: "Z"
+          direction: "N",
+          id: "J"
         }
       ],
       gates: [
         {
-          x: 2,
-          y: 2,
+          x: 1,
+          y: 0,
           trigger: "K"
+        },
+        {
+          x: 0,
+          y: 4,
+          trigger: "L"
         }
       ],
       schema_version: 1,
-      seed: 3573,
+      seed: 19,
       solution: [],
-      level_id: "challenge-10",
-      title: "\u7A84\u7A97\u6536\u5DE5",
-      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
-      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+      boss: {
+        id: "B",
+        after: [
+          "G",
+          "I",
+          "J"
+        ]
+      },
+      level_id: "events-10",
+      title: "\u4E24\u9053\u95F8\u90FD\u8981\u987E",
+      stage: "\u4E8B\u4EF6\u7EFC\u5408\xB7\u5F85\u771F\u4EBA\u96BE\u5EA6\u6821\u51C6",
+      goal: "\u8001\u677FB\u7B49\u5458\u5DE5G\u3001I\u3001J\uFF1BK\u2460/L\u2461\u5148\u540E\u5F71\u54CD\u8DEF\u7EBF\u3002"
     }
   ];
 
@@ -819,7 +850,7 @@
     return Array.from({ length: c.length }, (_, i) => [c.x + (["E", "W"].includes(c.direction) ? i : 0), c.y + (["N", "S"].includes(c.direction) ? i : 0)]);
   }
 
-  // src/enhanced/core.ts
+  // src/challenge/event-core.ts
   var remaining = (l, s) => l.cars.filter((c) => !s.removed.includes(c.id));
   var closed = (g, s) => s.removed.includes(g.trigger);
   function ray(c, l) {
@@ -834,6 +865,10 @@
     return p;
   }
   function obstruction(l, s, id) {
+    if (l.boss?.id === id) {
+      const wait = l.boss.after.filter((id2) => !s.removed.includes(id2));
+      if (wait.length) return `\u5458\u5DE5 ${wait.join("\u3001")} \u672A\u8D70\uFF1A\u8001\u677F\u987B\u5728\u672C\u533A\u5458\u5DE5\u4E4B\u540E\u79BB\u573A`;
+    }
     const cars = remaining(l, s), c = cars.find((c2) => c2.id === id);
     if (!c) return "\u5DF2\u79BB\u573A";
     for (const [x, y] of ray(c, l)) {
@@ -886,7 +921,7 @@
     }
   }
 
-  // src/enhanced/art.ts
+  // src/challenge/event-art.ts
   var ox = 24;
   var oy = 58;
   var cell = 52;
@@ -919,7 +954,7 @@
     c.stroke();
     c.restore();
   }
-  function car(c, v, offset, outline, shake2, pressed) {
+  function car(c, v, offset, outline, shake2, pressed, special = "") {
     const horizontal = "EW".includes(v.direction), w = (horizontal ? v.length : 1) * cell - 8, h = (horizontal ? 1 : v.length) * cell - 8, len = v.length * cell - 8, x = ox + v.x * cell + 4, y = oy + v.y * cell + 4, angle = { E: 0, S: Math.PI / 2, W: Math.PI, N: -Math.PI / 2 }[v.direction];
     c.save();
     c.translate(x + w / 2, y + h / 2);
@@ -936,7 +971,7 @@
       box(c, a, 16, 15, 9, 3, "#28424e");
       box(c, a + 3, -24, 8, 2, 1, "#617680");
     }
-    const palette = v.id === "K" ? ["#ffe49a", "#eab14c"] : [["#9fdbd1", "#55b3a9"], ["#a9c8f5", "#719cdd"], ["#f4bac0", "#d9879e"], ["#c9bce9", "#a393cf"]][v.id.charCodeAt(0) % 4], gradient = c.createLinearGradient(0, -22, 0, 22);
+    const palette = special === "boss" ? ["#b5a0d3", "#7f6da7"] : special === "second" ? ["#93d4e9", "#4d9ac9"] : v.id === "K" ? ["#ffe49a", "#eab14c"] : [["#9fdbd1", "#55b3a9"], ["#a9c8f5", "#719cdd"], ["#f4bac0", "#d9879e"], ["#c9bce9", "#a393cf"]][v.id.charCodeAt(0) % 4], gradient = c.createLinearGradient(0, -22, 0, 22);
     gradient.addColorStop(0, palette[0]);
     gradient.addColorStop(1, palette[1]);
     c.fillStyle = gradient;
@@ -962,7 +997,34 @@
     c.lineTo(len / 2 - 12, 0);
     c.lineTo(len / 2 - 17, 5);
     c.stroke();
-    if (v.id === "K") key(c, -7, 0, 0.9);
+    if (special === "boss") {
+      c.fillStyle = "#ffe39a";
+      c.strokeStyle = "#775b28";
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(-17, 5);
+      c.lineTo(-19, -5);
+      c.lineTo(-11, 0);
+      c.lineTo(-7, -8);
+      c.lineTo(-3, 0);
+      c.lineTo(5, -5);
+      c.lineTo(3, 5);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else if (special === "second") {
+      c.fillStyle = "#d6f7ff";
+      c.strokeStyle = "#28627b";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-7, -8);
+      c.lineTo(1, 0);
+      c.lineTo(-7, 8);
+      c.lineTo(-15, 0);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    } else if (v.id === "K") key(c, -7, 0, 0.9);
     else {
       c.strokeStyle = "#ffffff77";
       c.beginPath();
@@ -974,11 +1036,12 @@
     label(c, v.id, x + 6 + Math.cos(angle) * offset, y + 12 + Math.sin(angle) * offset, 9, "#304e59");
   }
   function drawBoard(c, l, s, moving2, highlight2, shake2) {
+    const special = (id) => l.boss?.id === id ? "boss" : l.gates.some((g) => g.trigger === id) && id !== "K" ? "second" : "";
     const victims = trapped(l, s), elapsed = moving2 ? Date.now() - moving2.start : 0;
     box(c, 0, 0, 360, 384, 18, "#e6eee7");
     label(c, `P  \u5269 ${remaining(l, s).length} \u8F86`, 24, 28, 15);
     key(c, 205, 23, 0.65);
-    label(c, "K \u79BB\u573A \xB7 \u9053\u95F8\u843D\u4E0B", 336, 28, 11, "#85672e", "right");
+    label(c, l.gates.length > 1 ? "K\u2460 / L\u2461 \u79BB\u573A\u843D\u5BF9\u5E94\u95F8" : "K \u79BB\u573A \xB7 \u9053\u95F8\u843D\u4E0B", 336, 28, 11, "#85672e", "right");
     box(c, 19, 53, 322, 322, 13, "#c4d3cb");
     box(c, 24, 58, 312, 312, 9, "#748c8d");
     for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
@@ -1017,7 +1080,7 @@
         const v = l.cars.find((v2) => v2.id === id);
         for (const g of l.gates) {
           const horiz = "EW".includes(v.direction);
-          if (horiz ? g.y === v.y : g.x === v.x) {
+          if (closed(g, s) && (horiz ? g.y === v.y : g.x === v.x) && { E: g.x >= v.x + v.length, W: g.x < v.x, N: g.y < v.y, S: g.y >= v.y + v.length }[v.direction]) {
             c.beginPath();
             c.moveTo(ox + (v.x + (horiz ? v.length / 2 : 0.5)) * cell, oy + (v.y + (horiz ? 0.5 : v.length / 2)) * cell);
             c.lineTo(ox + (g.x + 0.5) * cell, oy + (g.y + 0.5) * cell);
@@ -1029,7 +1092,7 @@
     }
     for (const g of l.gates) {
       const x = ox + g.x * cell, y = oy + g.y * cell, shut = closed(g, s), t = moving2?.car.id === g.trigger ? Math.max(0, Math.min(1, (elapsed - 260) / 340)) : shut ? 1 : 0;
-      box(c, x + 3, y + 3, 46, 46, 8, t === 1 ? "#f1b8a0" : "#e1ca86");
+      box(c, x + 3, y + 3, 46, 46, 8, t === 1 ? "#f1b8a0" : g.trigger === "L" ? "#a7c9dc" : "#e1ca86");
       c.strokeStyle = "#fff1b0";
       c.lineWidth = 1;
       c.setLineDash([3, 3]);
@@ -1043,7 +1106,7 @@
       c.shadowOffsetY = 3;
       box(c, -3, -4, 36, 8, 3, "#fff5d6");
       c.shadowColor = "transparent";
-      for (let a = 3; a < 30; a += 10) box(c, a, -4, 5, 8, 1, "#dc705d");
+      for (let a = 3; a < 30; a += 10) box(c, a, -4, 5, 8, 1, g.trigger === "L" ? "#4c86b4" : "#dc705d");
       c.restore();
       box(c, x + 5, y + 24, 11, 18, 4, "#48656a");
       c.fillStyle = t === 1 ? "#d35557" : "#65c691";
@@ -1059,6 +1122,7 @@
         c.lineTo(x + 41, y + 35);
         c.stroke();
       } else key(c, x + 29, y + 42, 0.45);
+      label(c, g.trigger === "L" ? "\u2461 L" : "\u2460 K", x + 34, y + 13, 9, "#3b5362", "center");
     }
     c.save();
     c.beginPath();
@@ -1067,11 +1131,11 @@
     for (const v of remaining(l, s)) {
       const tutorial = s.removed.includes("A") ? s.removed.includes("K") ? "B" : "K" : "A", outline = victims.includes(v.id) ? "#ff6d62" : v.id === highlight2 || l.level_id === "overtime-1" && !moving2 && !highlight2 && v.id === tutorial ? "#fff8df" : "";
       const dt = shake2?.id === v.id ? Date.now() - shake2.start : 999;
-      car(c, v, 0, outline, dt < 240 ? Math.sin(dt / 18) * 3 * (1 - dt / 240) : 0, false);
+      car(c, v, 0, outline, dt < 240 ? Math.sin(dt / 18) * 3 * (1 - dt / 240) : 0, false, special(v.id));
     }
     if (moving2) {
       const t = Math.max(0, Math.min(1, (elapsed - 55) / 205));
-      car(c, moving2.car, moving2.distance * (1 - (1 - t) ** 2), moving2.car.id === "K" ? "#fff1a7" : "", 0, elapsed < 55);
+      car(c, moving2.car, moving2.distance * (1 - (1 - t) ** 2), moving2.car.id === "K" ? "#fff1a7" : "", 0, elapsed < 55, special(moving2.car.id));
     }
     c.restore();
     if (won(l, s) && !moving2) {
@@ -1087,9 +1151,12 @@
     }
   }
 
-  // src/enhanced/sound.ts
+  // src/challenge/event-sound.ts
   var settingsKey = "nc-mg-001-enhanced-sound";
   var notes = {
+    boss: { hz: [330, 440, 660], duration: 0.08, wave: "triangle" },
+    gate2: { hz: [260, 130], duration: 0.075, wave: "triangle" },
+    key2: { hz: [830, 1100], duration: 0.085, wave: "sine" },
     tap: { hz: [620], duration: 0.045, wave: "sine" },
     exit: { hz: [220, 330], duration: 0.09, wave: "triangle" },
     blocked: { hz: [145, 115], duration: 0.065, wave: "triangle" },
@@ -1189,9 +1256,9 @@
     return { unlock, play, toggle, pause };
   }
 
-  // src/challenge/app.ts
-  var levels = challenge_default;
-  var key2 = "nc-mg-001-challenge-m1-v1";
+  // src/challenge/events-app.ts
+  var levels = events_default;
+  var key2 = "nc-mg-001-challenge-events-v1";
   var logKey = key2 + "-events";
   var test = new URLSearchParams(location.search).has("test");
   var $ = (id) => document.getElementById(id);
@@ -1244,6 +1311,7 @@
       $("storage").textContent = "\u672C\u673A\u5B58\u50A8\u4E0D\u53EF\u7528\uFF0C\u672C\u5C40\u4ECD\u53EF\u7EE7\u7EED\u3002";
     }
   }
+  var isTrigger = (id) => level().gates.some((g) => g.trigger === id);
   var level = () => levels[save.current];
   var state = () => ({ removed: save.removed });
   var ox2 = 24;
@@ -1251,17 +1319,17 @@
   function render() {
     const l = level(), s = state(), victims = trapped(l, s), done = won(l, s);
     $("levelTitle").textContent = `${save.current + 1}/10 \xB7 ${l.title}`;
-    $("stage").textContent = `${l.stage} \xB7 ${l.goal}`;
+    $("stage").textContent = l.boss ? `B\u8001\u677F\uFF1A\u5458\u5DE5 ${l.boss.after.join("\u3001")} \u5168\u8D70\u540E\u624D\u80FD\u8D70\uFF1B\u5176\u4F59\u540E\u52E4\u53EF\u968F\u540E\u79BB\u573A\u3002K\u2460/L\u2461\u5404\u5173\u5BF9\u5E94\u95F8\u3002` : `${l.stage} \xB7 ${l.goal}`;
     $("choose").value = String(save.current);
     drawBoard(ctx, l, s, moving, highlight, shake);
     const lesson = save.current === 0 ? !s.removed.includes("A") ? "\u70B9\u767D\u6846 A\uFF0C\u6CBF\u7BAD\u5934\u79BB\u573A\uFF1B\u4E0D\u7528\u62D6\u52A8\u3002" : !s.removed.includes("K") ? "A \u5DF2\u8FC7\u95F8\u3002\u70B9\u9EC4\u8272 K\uFF0C\u770B\u9053\u95F8\u843D\u4E0B\u3002" : "\u95F8\u5DF2\u843D\uFF1BB \u4E0D\u7ECF\u8FC7\u95F8\uFF0C\u70B9 B \u5C31\u80FD\u6E05\u573A\u3002" : message;
-    const status = paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : moving ? moving.car.id === "K" ? Date.now() - moving.start < exitMs ? "K \u6B63\u5728\u79BB\u573A\uFF0C\u968F\u540E\u843D\u95F8\u2026\u2026" : "\u9053\u95F8\u6B63\u5728\u843D\u4E0B\u2026\u2026" : `${moving.car.id} \u6B63\u5728\u79BB\u573A\u2026\u2026` : victims.length ? `\u95F8\u5DF2\u843D\uFF0C${victims.join("\u3001")} \u88AB\u9053\u95F8\u56F0\u4F4F\uFF1A\u5B83\u8FD8\u8981\u7ECF\u8FC7\u95F8\u4F4D\u3002\u70B9\u300C\u514D\u8D39\u91CD\u5F00\u300D\u518D\u8BD5\u3002` : done ? "\u6E05\u573A\u5B8C\u6210\uFF01\u4E0B\u73ED\u5566 \u2713 \u70B9\u300C\u4E0B\u4E00\u5173\u300D\u7EE7\u7EED\u3002" : highlight ? message : lesson;
+    const status = paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : moving ? isTrigger(moving.car.id) ? Date.now() - moving.start < exitMs ? "K \u6B63\u5728\u79BB\u573A\uFF0C\u968F\u540E\u843D\u95F8\u2026\u2026" : "\u9053\u95F8\u6B63\u5728\u843D\u4E0B\u2026\u2026" : `${moving.car.id} \u6B63\u5728\u79BB\u573A\u2026\u2026` : victims.length ? `\u95F8\u5DF2\u843D\uFF0C${victims.join("\u3001")} \u88AB\u9053\u95F8\u56F0\u4F4F\uFF1A\u5B83\u8FD8\u8981\u7ECF\u8FC7\u95F8\u4F4D\u3002\u70B9\u300C\u514D\u8D39\u91CD\u5F00\u300D\u518D\u8BD5\u3002` : done ? "\u6E05\u573A\u5B8C\u6210\uFF01\u4E0B\u73ED\u5566 \u2713 \u70B9\u300C\u4E0B\u4E00\u5173\u300D\u7EE7\u7EED\u3002" : highlight ? message : lesson;
     $("next").textContent = save.current === levels.length - 1 ? "\u5B8C\u6210\xB7\u7ED9\u53CD\u9988" : "\u4E0B\u4E00\u5173 \u2192";
     $("status").textContent = status;
     $("status").className = victims.length && !moving ? "failure" : done ? "success" : "";
     $("restart").classList.toggle("urgent", victims.length > 0 && !moving);
     $("restart").textContent = "\u514D\u8D39\u91CD\u5F00";
-    canvas.dataset.phase = moving ? moving.car.id === "K" && Date.now() - moving.start >= exitMs ? "gate-closing" : "exiting" : victims.length ? "trapped" : done ? "complete" : "ready";
+    canvas.dataset.phase = moving ? isTrigger(moving.car.id) && Date.now() - moving.start >= exitMs ? "gate-closing" : "exiting" : victims.length ? "trapped" : done ? "complete" : "ready";
     canvas.dataset.trapped = victims.join(",");
     $("next").disabled = !done || Boolean(moving);
     $("hint").disabled = Boolean(moving);
@@ -1279,11 +1347,11 @@
     if (paused) return;
     if (moving) {
       const elapsed = Date.now() - moving.start;
-      if (moving.car.id === "K" && elapsed >= exitMs && !moving.gateSound) {
+      if (isTrigger(moving.car.id) && elapsed >= exitMs && !moving.gateSound) {
         moving.gateSound = true;
-        sound.play("gate");
+        sound.play(moving.car.id === "L" ? "gate2" : "gate");
       }
-      if (elapsed >= exitMs + (moving.car.id === "K" ? gateMs : 0)) {
+      if (elapsed >= exitMs + (isTrigger(moving.car.id) ? gateMs : 0)) {
         moving = null;
         message = won(level(), state()) ? "\u6E05\u573A\u5B8C\u6210" : remaining(level(), state()).length ? "\u7EE7\u7EED\u89C2\u5BDF\u8C01\u8981\u8FC7\u95F8" : "";
         if (won(level(), state())) sound.play("success");
@@ -1297,7 +1365,7 @@
     cancel();
     save.current = index;
     save.removed = [];
-    message = "\u5148\u770B\u95F8\u4F4D\u548C\u8F66\u5934\uFF0C\u8C01\u5FC5\u987B\u5728 K \u524D\u79BB\u5F00\uFF1F";
+    message = "\u5148\u770B\u95F8\u4F4D\u548C\u8F66\u5934\uFF0C\u518D\u770B\u8001\u677F\u7684\u5458\u5DE5\u540D\u5355\u3002";
     persist();
     record(how);
     record("level_start");
@@ -1316,12 +1384,12 @@
       sound.play("blocked");
       shake = { id: c.id, start: Date.now() };
       highlight = c.id;
-      message = `${c.id} \u88AB ${block} \u6321\u4F4F\uFF0C\u5148\u770B\u524D\u65B9\u3002`;
+      message = level().boss?.id === c.id && block.startsWith("\u5458\u5DE5") ? `\u8001\u677F B \u6682\u4E0D\u80FD\u8D70\uFF1A${block}\u3002` : `${c.id} \u88AB ${block} \u6321\u4F4F\uFF0C\u5148\u770B\u524D\u65B9\u3002`;
       if (timer !== void 0) clearTimeout(timer);
       frame();
       return;
     }
-    sound.play(c.id === "K" ? "key" : "exit");
+    sound.play(c.id === level().boss?.id ? "boss" : c.id === "L" && isTrigger(c.id) ? "key2" : isTrigger(c.id) ? "key" : "exit");
     const before = state(), next = move(level(), before, c.id);
     save.removed = next.removed;
     highlight = "";
@@ -1380,7 +1448,7 @@
   };
   $("closeFeedback").onclick = () => $("form").close();
   function feedbackText() {
-    return ["\u6536\u5DE5\u843D\u95F8 \xB7 \u5341\u5173\u8BD5\u73A9 v1", `\u6570\u636E\u6765\u6E90\uFF1A${test ? "\u81EA\u52A8\u6D4B\u8BD5\uFF08\u4E0D\u8BA1\u771F\u4EBA\uFF09" : "\u672C\u673A\u8BB0\u5F55\uFF0C\u672A\u6838\u5B9E\u771F\u4EBA"}`, `\u5B8C\u6210\uFF1A${save.completed.length}/10`, ...["understand", "again", "stuck", "feeling"].map((id) => `${$(id).dataset.label}\uFF1A${$(id).selectedOptions[0].textContent}`), "\u672C\u673A\u4E8B\u4EF6\uFF08\u65E0\u59D3\u540D\u3001\u8D26\u53F7\u3001\u8BBE\u5907\u6807\u8BC6\uFF1B\u672A\u81EA\u52A8\u4E0A\u4F20\uFF09\uFF1A", ...events.map((e) => `${e.elapsedSeconds}s ${e.level} ${e.event} ${e.source}`)].join("\n");
+    return ["\u6536\u5DE5\u843D\u95F8 \xB7 M2\u4E8B\u4EF6\u5341\u5173", `\u6570\u636E\u6765\u6E90\uFF1A${test ? "\u81EA\u52A8\u6D4B\u8BD5\uFF08\u4E0D\u8BA1\u771F\u4EBA\uFF09" : "\u672C\u673A\u8BB0\u5F55\uFF0C\u672A\u6838\u5B9E\u771F\u4EBA"}`, `\u5B8C\u6210\uFF1A${save.completed.length}/10`, ...["understand", "again", "stuck", "feeling"].map((id) => `${$(id).dataset.label}\uFF1A${$(id).selectedOptions[0].textContent}`), "\u672C\u673A\u4E8B\u4EF6\uFF08\u65E0\u59D3\u540D\u3001\u8D26\u53F7\u3001\u8BBE\u5907\u6807\u8BC6\uFF1B\u672A\u81EA\u52A8\u4E0A\u4F20\uFF09\uFF1A", ...events.map((e) => `${e.elapsedSeconds}s ${e.level} ${e.event} ${e.source}`)].join("\n");
   }
   $("export").onclick = () => {
     $("exportText").value = feedbackText();
