@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'parking/**'
+      - 'enhanced/**'
+      - 'tests/play_enhanced.py'
       - 'tests/play_game.py'
       - '.github/workflows/gameplay.yml'
   workflow_dispatch:
@@ -29,6 +31,8 @@ jobs:
           sleep 2
       - name: Play all 24 levels using Chromium
         run: python tests/play_game.py
+      - name: Play enhanced 10 levels using Chromium
+        run: python tests/play_enhanced.py
       - name: Upload screenshot and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
