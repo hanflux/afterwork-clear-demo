@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 内部原型</title><style>body{margin:0;background:#101a2b;display:flex;justify-content:center}canvas{width:min(100vw,calc(100vh * .5625));height:auto;touch-action:none}</style><canvas aria-label="停车棋盘，点击车辆沿箭头离场"></canvas><script>"use strict";
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 内部视觉反馈候选</title><style>body{margin:0;background:#101a2b;display:flex;justify-content:center}canvas{width:min(100vw,calc(100vh * .5625));height:auto;touch-action:none}</style><canvas aria-label="停车棋盘，沿箭头点击车辆离场"></canvas><script>"use strict";
 (() => {
   // levels/prototype.json
   var prototype_default = [
@@ -2037,6 +2037,19 @@
   function remove(l, id) {
     return canExit(l, id) ? { ...l, cars: l.cars.filter((v) => v.id !== id) } : l;
   }
+  function firstBlocker(l, id) {
+    const c = l.cars.find((v) => v.id === id);
+    if (!c) return null;
+    const [dx, dy] = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[c.direction];
+    let x = c.x + (c.direction === "E" ? c.length : 0) + (c.direction === "W" ? -1 : 0), y = c.y + (c.direction === "S" ? c.length : 0) + (c.direction === "N" ? -1 : 0);
+    while (x >= 0 && y >= 0 && x < l.width && y < l.height) {
+      const hit = l.cars.find((v) => v.id !== id && cells(v).some(([a, b]) => a === x && b === y));
+      if (hit) return hit;
+      x += dx;
+      y += dy;
+    }
+    return null;
+  }
 
   // src/app/save.ts
   function loadSave(raw, count) {
@@ -2060,14 +2073,16 @@
   function start(host) {
     const levels = prototype_default;
     levels.forEach(validate);
-    const canvas2 = host.canvas, ctx = canvas2.getContext("2d");
+    const ctx = host.canvas.getContext("2d");
     let state;
     try {
       state = loadSave(host.load(), levels.length);
     } catch {
       state = loadSave(null, levels.length);
     }
-    let board = copy(levels[state.current]), paused = false, lockedUntil = 0, highlight = "", bad = false;
+    const copy = (l) => ({ ...l, cars: l.cars.map((c) => ({ ...c })), solution: [...l.solution] });
+    let board = copy(levels[state.current]), paused = false, highlight = "", blocked = "", obstacle = "", storageFailed = false;
+    let moving = null, blockedUntil = 0, timer;
     let message = state.current === 0 ? "\u5148\u70B9 \u2191 B\uFF0C\u518D\u8BA9 \u2192 A \u79BB\u573A\uFF1B\u88AB\u6321\u4F4F\u4E0D\u6263\u5206" : "\u6CBF\u7BAD\u5934\u9A76\u51FA\u56DB\u8FB9\uFF1B\u53EA\u79FB\u9664\uFF0C\u4E0D\u5012\u8F66";
     for (const id of state.removed) {
       if (!canExit(board, id)) {
@@ -2078,35 +2093,73 @@
       }
       board = remove(board, id);
     }
-    function copy(l) {
-      return { ...l, cars: l.cars.map((c) => ({ ...c })), solution: [...l.solution] };
-    }
+    if (!board.cars.length) message = "\u6E05\u573A\u5B8C\u6210\uFF01\u70B9\u51FB\u4E0B\u4E00\u5173";
+    const size = 52, ox = 24, oy = 142, duration = 260;
     function persist() {
       try {
         host.save(JSON.stringify(state));
+        storageFailed = false;
       } catch {
-        message += " \xB7 \u5B58\u50A8\u4E0D\u53EF\u7528";
+        storageFailed = true;
       }
     }
-    const size = 52, ox = 24, oy = 142;
-    function button(x, y, w, text) {
+    function resetFeedback() {
+      if (timer !== void 0) clearTimeout(timer);
+      timer = void 0;
+      moving = null;
+      blockedUntil = 0;
+      blocked = "";
+      obstacle = "";
+      highlight = "";
+    }
+    function button(x, y, w, s) {
       ctx.fillStyle = "#24334b";
       ctx.fillRect(x, y, w, 44);
       ctx.fillStyle = "#fff";
       ctx.font = "16px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(text, x + w / 2, y + 28);
+      ctx.fillText(s, x + w / 2, y + 28);
     }
-    function drawCar(c) {
-      const horizontal = ["E", "W"].includes(c.direction), w = (horizontal ? c.length : 1) * size - 8, h = (horizontal ? 1 : c.length) * size - 8, x = ox + c.x * size + 4, y = oy + c.y * size + 4;
-      ctx.fillStyle = highlight === c.id ? bad ? "#f48b92" : "#ffe76a" : ["#7bcbbc", "#edae7e", "#8cacf2", "#d5a0cf"][c.id.charCodeAt(0) % 4];
-      ctx.fillRect(x, y, w, h);
+    const vector = (c) => ({ N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] })[c.direction];
+    function car(c, offset = 0) {
+      const horizontal = c.direction === "E" || c.direction === "W", w = (horizontal ? c.length : 1) * size - 8, h = (horizontal ? 1 : c.length) * size - 8, [dx, dy] = vector(c);
+      const shake = c.id === blocked && Date.now() < blockedUntil ? Math.sin((blockedUntil - Date.now()) * 0.08) * 2 : 0;
+      const x = ox + c.x * size + 4 + dx * offset + shake, y = oy + c.y * size + 4 + dy * offset;
+      ctx.save();
+      ctx.translate(x + w / 2, y + h / 2);
+      ctx.rotate({ E: 0, S: Math.PI / 2, W: Math.PI, N: -Math.PI / 2 }[c.direction]);
+      const length = c.length * size - 8;
+      ctx.fillStyle = "#0b1320";
+      for (const xx of [-length / 2 + 12, length / 2 - 26]) {
+        ctx.fillRect(xx, -25, 14, 7);
+        ctx.fillRect(xx, 18, 14, 7);
+      }
+      ctx.fillStyle = ["#7bcbbc", "#edae7e", "#8cacf2", "#d5a0cf"][c.id.charCodeAt(0) % 4];
+      ctx.beginPath();
+      ctx.roundRect(-length / 2, -22, length, 44, 8);
+      ctx.fill();
+      ctx.strokeStyle = c.id === blocked ? "#ff7885" : c.id === obstacle ? "#65d9f4" : c.id === highlight ? "#ffe76a" : "#ffffff44";
+      ctx.lineWidth = c.id === blocked || c.id === highlight || c.id === obstacle ? 3 : 1;
+      ctx.stroke();
+      ctx.fillStyle = "#183446";
+      ctx.fillRect(length / 2 - 28, -14, 10, 28);
+      ctx.fillStyle = "#fff2c8";
+      ctx.fillRect(length / 2 - 5, -14, 3, 8);
+      ctx.fillRect(length / 2 - 5, 6, 3, 8);
+      ctx.strokeStyle = "#142035";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-13, 0);
+      ctx.lineTo(9, 0);
+      ctx.moveTo(2, -7);
+      ctx.lineTo(10, 0);
+      ctx.lineTo(2, 7);
+      ctx.stroke();
+      ctx.restore();
       ctx.fillStyle = "#142035";
-      ctx.font = "bold 24px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText({ N: "\u2191", S: "\u2193", E: "\u2192", W: "\u2190" }[c.direction], x + w / 2, y + h / 2 + 8);
-      ctx.font = "12px sans-serif";
-      ctx.fillText(c.id, x + 10, y + 16);
+      ctx.font = "bold 11px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(c.id, x + 6, y + 13);
     }
     function draw() {
       ctx.fillStyle = "#101a2b";
@@ -2115,28 +2168,83 @@
       ctx.fillStyle = "#f3d48c";
       ctx.font = "bold 26px sans-serif";
       ctx.fillText("\u522B\u5835\u7740\u4E0B\u73ED", 24, 45);
-      ctx.font = "15px sans-serif";
       ctx.fillStyle = "#fff";
-      ctx.fillText(`\u5185\u90E8\u539F\u578B \xB7 \u7B2C ${state.current + 1}/${levels.length} \u5173 \xB7 \u5269 ${board.cars.length} \u8F86`, 24, 76);
+      ctx.font = "15px sans-serif";
+      ctx.fillText(`\u5185\u90E8\u6253\u78E8 \xB7 \u7B2C ${state.current + 1}/${levels.length} \u5173 \xB7 \u5269 ${board.cars.length} \u8F86`, 24, 76);
       ctx.font = "12px sans-serif";
       ctx.fillText(paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : message, 24, 110);
       for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
         ctx.fillStyle = (x + y) % 2 ? "#202e43" : "#1c283b";
         ctx.fillRect(ox + x * size, oy + y * size, 50, 50);
       }
-      for (const c of board.cars) drawCar(c);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ox, oy, 312, 312);
+      ctx.clip();
+      for (const c of board.cars) car(c);
+      if (moving) {
+        const t = Math.min(1, (Date.now() - moving.start) / duration);
+        car(moving.car, moving.distance * (1 - (1 - t) ** 2));
+      }
+      ctx.restore();
+      if (blocked && obstacle) {
+        const a = board.cars.find((c) => c.id === blocked), b = board.cars.find((c) => c.id === obstacle);
+        if (a && b) {
+          const center = (c) => [ox + (c.x + (c.direction === "E" || c.direction === "W" ? c.length / 2 : 0.5)) * size, oy + (c.y + (c.direction === "N" || c.direction === "S" ? c.length / 2 : 0.5)) * size];
+          const [ax, ay] = center(a), [bx, by] = center(b);
+          ctx.strokeStyle = "#ff7885";
+          ctx.setLineDash([4, 4]);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
       button(24, 482, 92, "\u91CD\u5F00");
       button(134, 482, 92, "\u514D\u8D39\u63D0\u793A");
       button(244, 482, 92, "\u4E0B\u4E00\u5173");
       ctx.textAlign = "left";
       ctx.fillStyle = "#99abc3";
       ctx.font = "12px sans-serif";
-      ctx.fillText("\u65E0\u5E7F\u544A \xB7 \u65E0\u4E0A\u4F20 \xB7 \u8FDB\u5EA6\u4EC5\u4FDD\u5B58\u5728\u672C\u673A", 24, 559);
-      ctx.fillText(`\u5DF2\u5B8C\u6210 ${state.completed} \u5173 \xB7 \u6CBF\u7BAD\u5934\u5B8C\u6574\u79BB\u573A`, 24, 582);
+      ctx.fillText("\u7BAD\u5934\u4E0E\u8F66\u706F\u662F\u8F66\u5934 \xB7 \u7EA2\u6846\u53D7\u963B / \u84DD\u6846\u6321\u8F66", 24, 557);
+      ctx.fillText(`\u5DF2\u5B8C\u6210 ${state.completed} \u5173 \xB7 \u6CBF\u7BAD\u5934\u5B8C\u6574\u79BB\u573A`, 24, 580);
       button(24, 596, 180, `\u9707\u52A8\uFF1A${state.vibration ? "\u5F00" : "\u5173"}\uFF08\u53EF\u9009\uFF09`);
+      if (storageFailed) {
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#f3d48c";
+        ctx.font = "11px sans-serif";
+        ctx.fillText("\u5B58\u50A8\u4E0D\u53EF\u7528\uFF0C\u672C\u5C40\u4ECD\u53EF\u7EE7\u7EED", 24, 132);
+      }
+    }
+    function tick() {
+      timer = void 0;
+      if (paused) return;
+      if (moving && Date.now() - moving.start >= duration) {
+        const id = moving.car.id;
+        moving = null;
+        message = board.cars.length ? `${id} \u5DF2\u4E0B\u73ED\uFF01` : "\u6E05\u573A\u5B8C\u6210\uFF01\u70B9\u51FB\u4E0B\u4E00\u5173";
+      }
+      draw();
+      if (moving || Date.now() < blockedUntil) timer = setTimeout(tick, 16);
+    }
+    function animate() {
+      if (timer !== void 0) clearTimeout(timer);
+      tick();
     }
     host.input((x, y) => {
-      if (paused || Date.now() < lockedUntil) return;
+      if (paused) return;
+      if (y >= 482 && y <= 526 && x >= 24 && x <= 116) {
+        resetFeedback();
+        board = copy(levels[state.current]);
+        state.removed = [];
+        message = "\u5DF2\u91CD\u5F00";
+        persist();
+        draw();
+        return;
+      }
+      if (moving) return;
       if (y >= 596 && y <= 640 && x >= 24 && x <= 204) {
         state.vibration = !state.vibration;
         message = "\u9707\u52A8\u8BBE\u7F6E\u5DF2\u4FDD\u5B58";
@@ -2145,60 +2253,55 @@
         return;
       }
       if (y >= 482 && y <= 526) {
-        if (x >= 24 && x <= 116) {
-          board = copy(levels[state.current]);
-          state.removed = [];
-          message = "\u5DF2\u91CD\u5F00";
-          highlight = "";
-          persist();
-        } else if (x >= 134 && x <= 226) {
+        if (x >= 134 && x <= 226) {
+          resetFeedback();
           highlight = board.cars.find((c2) => canExit(board, c2.id))?.id || "";
-          bad = false;
-          message = highlight ? "\u4EAE\u8272\u8F66\u8F86\u53EF\u4EE5\u79BB\u5F00" : "\u5DF2\u7ECF\u6E05\u7A7A";
+          message = highlight ? "\u4EAE\u6846\u8F66\u8F86\u53EF\u4EE5\u79BB\u5F00" : "\u5DF2\u7ECF\u6E05\u7A7A";
         } else if (x >= 244 && x <= 336) {
           if (board.cars.length) message = "\u5148\u6E05\u7A7A\u5F53\u524D\u68CB\u76D8";
           else if (state.current < levels.length - 1) {
+            resetFeedback();
             state.current++;
             state.removed = [];
             board = copy(levels[state.current]);
             message = "\u65B0\u7684\u4E00\u5173";
-            highlight = "";
             persist();
-          } else message = "24 \u5173\u539F\u578B\u5B8C\u6210\uFF0C\u671F\u5F85\u771F\u5B9E\u8BD5\u73A9\u53CD\u9988";
+          } else message = "24 \u5173\u8BD5\u73A9\u5B8C\u6210";
         }
         draw();
         return;
       }
-      const gx = Math.floor((x - ox) / size), gy = Math.floor((y - oy) / size);
-      const c = board.cars.find((c2) => gx >= c2.x && gy >= c2.y && gx < c2.x + (["E", "W"].includes(c2.direction) ? c2.length : 1) && gy < c2.y + (["N", "S"].includes(c2.direction) ? c2.length : 1));
+      const gx = Math.floor((x - ox) / size), gy = Math.floor((y - oy) / size), c = board.cars.find((c2) => gx >= c2.x && gy >= c2.y && gx < c2.x + (c2.direction === "E" || c2.direction === "W" ? c2.length : 1) && gy < c2.y + (c2.direction === "N" || c2.direction === "S" ? c2.length : 1));
       if (!c) return;
       const next = remove(board, c.id);
+      resetFeedback();
       if (next === board) {
-        message = `${c.id} \u524D\u9762\u6709\u8F66\uFF0C\u5148\u8BA9\u5176\u4ED6\u8F66\u79BB\u5F00`;
-        highlight = c.id;
-        bad = true;
-      } else {
-        board = next;
-        highlight = "";
-        bad = false;
-        lockedUntil = Date.now() + 140;
-        state.removed.push(c.id);
-        message = `${c.id} \u5DF2\u4E0B\u73ED\uFF01`;
-        if (state.vibration) try {
-          host.feedback?.();
-        } catch {
-        }
-        if (!board.cars.length) {
-          state.completed = Math.max(state.completed, state.current + 1);
-          message = "\u6E05\u573A\u5B8C\u6210\uFF01\u70B9\u51FB\u4E0B\u4E00\u5173";
-        }
-        persist();
+        blocked = c.id;
+        obstacle = firstBlocker(board, c.id)?.id || "";
+        blockedUntil = Date.now() + 280;
+        message = `${c.id} \u88AB ${obstacle} \u6321\u4F4F\uFF0C\u5148\u8BA9 ${obstacle} \u79BB\u5F00`;
+        animate();
+        return;
       }
-      draw();
+      board = next;
+      state.removed.push(c.id);
+      if (!board.cars.length) state.completed = Math.max(state.completed, state.current + 1);
+      const horizontal = c.direction === "E" || c.direction === "W", w = (horizontal ? c.length : 1) * size - 8, h = (horizontal ? 1 : c.length) * size - 8, cx = ox + c.x * size + 4, cy = oy + c.y * size + 4;
+      const distance = { E: ox + 312 - cx + 4, W: cx + w - ox + 4, S: oy + 312 - cy + 4, N: cy + h - oy + 4 }[c.direction];
+      moving = { car: c, start: Date.now(), distance };
+      message = `${c.id} \u6B63\u5728\u6CBF\u8F66\u5934\u9A76\u51FA`;
+      persist();
+      if (state.vibration) try {
+        host.feedback?.();
+      } catch {
+      }
+      animate();
     });
     host.lifecycle?.((hidden) => {
+      const hadMoving = Boolean(moving);
       paused = hidden;
-      lockedUntil = 0;
+      resetFeedback();
+      if (hadMoving) message = board.cars.length ? "\u5DF2\u79BB\u573A\u8FDB\u5EA6\u5DF2\u4FDD\u5B58\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : "\u6E05\u573A\u5B8C\u6210\uFF01\u70B9\u51FB\u4E0B\u4E00\u5173";
       persist();
       draw();
     });
