@@ -8,6 +8,7 @@ on:
       - 'random/**'
       - 'tests/play_enhanced.py'
       - 'tests/play_game.py'
+      - 'tests/play_random.py'
       - '.github/workflows/gameplay.yml'
   workflow_dispatch:
 
@@ -35,6 +36,8 @@ jobs:
         run: python tests/play_game.py
       - name: Play enhanced 10 levels using Chromium
         run: python tests/play_enhanced.py
+      - name: Play random seed challenges in Chromium
+        run: python tests/play_random.py
       - name: Upload screenshot and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
