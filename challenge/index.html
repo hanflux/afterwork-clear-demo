@@ -1,0 +1,1402 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>别堵着下班 · 挑战试验 M1</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f0e5;color:#304e59;font:15px system-ui,sans-serif;background-image:radial-gradient(#d9e5d6 1px,transparent 1px);background-size:18px 18px}.shell{max-width:420px;margin:auto;padding:8px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{margin:0;font-size:23px;letter-spacing:-1px;color:#355b60}#sound{min-height:36px;padding:5px 9px;font-size:12px;white-space:nowrap;background:#e1eadd;border-color:#c7d7c6;box-shadow:none}p{margin:5px 0;line-height:1.4}.mode{font-size:12px;color:#789185;margin:2px 0 7px}#levelTitle{font-size:17px;margin:6px 0 2px}#stage{font-size:12px;color:#6a817a;min-height:30px}canvas{width:min(100%,360px);height:auto;margin:auto;touch-action:none;overscroll-behavior:contain;display:block;border-radius:18px;box-shadow:0 5px 0 #c3d3c388,0 8px 15px #354f4d12}#status{min-height:60px;padding:9px 11px;border:1px solid #d8dfcf;border-radius:13px;background:#fffcf2;color:#496661;font-size:14px;box-shadow:0 2px 0 #dedfce}.failure{background:#fff0df!important;color:#a35244!important;border-color:#e2a586!important}.success{background:#dfeddb!important;color:#3d7564!important;border-color:#a9c8ac!important}button,select{min-height:46px;border:1px solid #bbcebf;border-radius:13px;background:#e7eee2;color:#385e5c;font:600 15px system-ui;padding:8px;touch-action:manipulation;box-shadow:0 3px 0 #c2d2bf}button:disabled{opacity:.45;box-shadow:none}.buttons{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:9px}button:active{transform:translateY(2px);box-shadow:none;filter:brightness(.97)}button:focus-visible,select:focus-visible{outline:3px solid #e6aa58;outline-offset:2px}#next{background:#efbd6b;border-color:#dca858;color:#674e25;box-shadow:0 3px 0 #d5a151}.urgent{background:#f8c49b;border:2px solid #d98766;color:#74462e;box-shadow:0 3px 0 #df9a72}label{display:block;margin:10px 0}select{max-width:100%}details{font-size:12px;color:#72847b}summary{padding:8px 0}#progress,#storage{font-size:11px;color:#7c9185}dialog{max-width:min(94vw,420px);max-height:90svh;overflow:auto;border:1px solid #bacfbc;border-radius:20px;background:#faf8ed;color:#385e5c;padding:18px;box-shadow:0 16px 70px #23423844}dialog::backdrop{background:#223f4266}dialog select{display:block;width:100%;margin-top:4px}textarea{width:100%;height:160px;background:#fffdf5;color:#385e5c;border:1px solid #bacfbc;border-radius:8px;margin:8px 0}#choose{width:100%}#feedback{width:100%;background:#f6f3e8;box-shadow:none}.privacy{font-size:11px;color:#7c9185}.secondary{border-top:1px solid #d7dfd0;margin-top:9px;padding-top:3px}@media(max-height:700px){header h1{font-size:20px}#stage{min-height:0;font-size:11px;margin:2px 0}#levelTitle{margin:3px 0!important}.mode{margin:0 0 2px}#status{font-size:13px}.shell{padding-top:5px}#sound{min-height:32px}}
+</style><main class="shell"><header><h1>别堵着下班</h1><button id="sound" aria-label="切换音效" aria-pressed="true">♪ 音效开</button></header><p class="mode">挑战试验 M1 · 先看依赖，再选收工窗口</p><h2 id="levelTitle"></h2><p id="stage"></p><canvas id="board" aria-label="停车棋盘：点击车辆沿车头离场，黄色K触发道闸"></canvas><p id="status" role="status" aria-live="polite"></p><div class="buttons"><button id="restart">免费重开</button><button id="hint">免费提示</button><button id="next">下一关 →</button></div><p id="progress"></p><p id="storage"></p><section class="secondary"><details id="rules"><summary>怎么玩：只点车，不拖动</summary>车沿箭头完整离场。黄色钥匙车 K 离场后，标出的道闸永久落下。若还有车必须过闸，会被困住，可免费重开。不是倒计时，不会随机落闸。</details><label>选关（试玩可自由比较）<select id="choose"></select></label><button id="feedback" style="width:100%">留下试玩反馈（仅本机）</button><p class="privacy">无广告、无倒计时。反馈不会自动上传，不用填写身份信息。</p></section></main><dialog id="form"><h2>一分钟试玩反馈</h2><p>请玩后选一选；导出后可自行发给提供链接的人。不自动收集或上传。</p><label>规则看懂了吗？<select id="understand" data-label="理解"><option>请选择</option><option>直接看懂</option><option>用提示后看懂</option><option>仍不太懂</option></select></label><label>还想再玩几关吗？<select id="again" data-label="继续意愿"><option>请选择</option><option>想</option><option>不确定</option><option>不想</option></select></label><label>卡在哪关？<select id="stuck" data-label="卡关"><option>没有</option><option>第1关</option><option>第2关</option><option>第3关</option><option>第4关</option><option>第5关</option><option>第6关</option><option>第7关</option><option>第8关</option><option>第9关</option><option>第10关</option></select></label><label>出场顺序的感受<select id="feeling" data-label="感受"><option>请选择</option><option>有值得想的选择</option><option>像照固定顺序</option><option>主要是不明白规则</option><option>没意思</option></select></label><button id="export">生成无身份反馈文本</button><section id="exportBox" hidden><textarea id="exportText" readonly aria-label="可复制的试玩反馈"></textarea><button id="copy">复制</button><p id="copied"></p></section><button id="closeFeedback">关闭</button></dialog><script>"use strict";
+(() => {
+  // levels/challenge.json
+  var challenge_default = [
+    {
+      level_id: "overtime-1",
+      schema_version: 1,
+      seed: 1,
+      width: 6,
+      height: 6,
+      title: "\u6700\u540E\u6536\u5DE5\u7684\u8F66",
+      stage: "\u6559\u5B66",
+      goal: "\u5148\u9001 A \u8FC7\u95F8\uFF0C\u518D\u8BA9 K \u6536\u5DE5\u3002",
+      cars: [
+        {
+          id: "A",
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "K",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "B",
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N"
+        }
+      ],
+      gates: [
+        {
+          x: 4,
+          y: 2,
+          trigger: "K"
+        }
+      ],
+      solution: []
+    },
+    {
+      level_id: "overtime-2",
+      schema_version: 1,
+      seed: 2,
+      width: 6,
+      height: 6,
+      title: "\u5148\u770B\u8C01\u6321\u4F4F\u8DEF",
+      stage: "\u6559\u5B66",
+      goal: "A \u8981\u8FC7\u95F8\uFF0C\u5148\u8BA9\u6321\u4F4F A \u7684 C \u79BB\u5F00\u3002",
+      cars: [
+        {
+          id: "A",
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "N"
+        },
+        {
+          id: "C",
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "E"
+        },
+        {
+          id: "K",
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "W"
+        },
+        {
+          id: "B",
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "S"
+        }
+      ],
+      gates: [
+        {
+          x: 2,
+          y: 0,
+          trigger: "K"
+        }
+      ],
+      solution: []
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 1,
+          y: 5,
+          length: 2,
+          direction: "E",
+          id: "A"
+        },
+        {
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "B"
+        },
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "C"
+        },
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "D"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "E"
+        },
+        {
+          x: 4,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "K"
+        },
+        {
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "W",
+          id: "H"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "I"
+        }
+      ],
+      gates: [
+        {
+          x: 0,
+          y: 2,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 50616,
+      solution: [],
+      level_id: "challenge-3",
+      title: "\u4E24\u6BB5\u63A5\u529B",
+      stage: "\u4E2D\u7B49\u7ED3\u6784",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "A"
+        },
+        {
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "W",
+          id: "K"
+        },
+        {
+          x: 2,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "C"
+        },
+        {
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "D"
+        },
+        {
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "S",
+          id: "E"
+        },
+        {
+          x: 5,
+          y: 3,
+          length: 2,
+          direction: "N",
+          id: "F"
+        },
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "H"
+        }
+      ],
+      gates: [
+        {
+          x: 2,
+          y: 4,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 98469,
+      solution: [],
+      level_id: "challenge-4",
+      title: "\u8FC7\u95F8\u524D\u7684\u5C94\u8DEF",
+      stage: "\u4E2D\u7B49\u7ED3\u6784",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "A"
+        },
+        {
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "B"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "E",
+          id: "C"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "D"
+        },
+        {
+          x: 2,
+          y: 3,
+          length: 2,
+          direction: "N",
+          id: "E"
+        },
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "E",
+          id: "F"
+        },
+        {
+          x: 5,
+          y: 2,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "H"
+        },
+        {
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "K"
+        }
+      ],
+      gates: [
+        {
+          x: 2,
+          y: 0,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 5343,
+      solution: [],
+      level_id: "challenge-5",
+      title: "\u6536\u5DE5\u7A97\u53E3",
+      stage: "\u4E2D\u7B49\u7ED3\u6784",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "A"
+        },
+        {
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "S",
+          id: "B"
+        },
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "C"
+        },
+        {
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "E",
+          id: "D"
+        },
+        {
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "E"
+        },
+        {
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "W",
+          id: "F"
+        },
+        {
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "W",
+          id: "G"
+        },
+        {
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "H"
+        },
+        {
+          x: 5,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "K"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "J"
+        }
+      ],
+      gates: [
+        {
+          x: 2,
+          y: 5,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 98935,
+      solution: [],
+      level_id: "challenge-6",
+      title: "\u5148\u817E\u8DEF\uFF0C\u518D\u7559\u95F8",
+      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "A"
+        },
+        {
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "K"
+        },
+        {
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "W",
+          id: "C"
+        },
+        {
+          x: 2,
+          y: 2,
+          length: 2,
+          direction: "N",
+          id: "D"
+        },
+        {
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "E"
+        },
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "F"
+        },
+        {
+          x: 1,
+          y: 1,
+          length: 2,
+          direction: "E",
+          id: "G"
+        },
+        {
+          x: 3,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "H"
+        },
+        {
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "W",
+          id: "I"
+        },
+        {
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "W",
+          id: "J"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "Z"
+        }
+      ],
+      gates: [
+        {
+          x: 4,
+          y: 4,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 4360,
+      solution: [],
+      level_id: "challenge-7",
+      title: "\u4EA4\u9519\u4EA4\u63A5",
+      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 1,
+          y: 2,
+          length: 2,
+          direction: "W",
+          id: "A"
+        },
+        {
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "B"
+        },
+        {
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "C"
+        },
+        {
+          x: 1,
+          y: 0,
+          length: 2,
+          direction: "E",
+          id: "D"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "E",
+          id: "K"
+        },
+        {
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "S",
+          id: "F"
+        },
+        {
+          x: 4,
+          y: 3,
+          length: 2,
+          direction: "N",
+          id: "G"
+        },
+        {
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "W",
+          id: "H"
+        },
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "I"
+        },
+        {
+          x: 3,
+          y: 5,
+          length: 2,
+          direction: "E",
+          id: "J"
+        },
+        {
+          x: 3,
+          y: 0,
+          length: 2,
+          direction: "S",
+          id: "Z"
+        }
+      ],
+      gates: [
+        {
+          x: 3,
+          y: 2,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 8658,
+      solution: [],
+      level_id: "challenge-8",
+      title: "\u628A\u7A97\u53E3\u7559\u4F4F",
+      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 5,
+          y: 2,
+          length: 2,
+          direction: "N",
+          id: "A"
+        },
+        {
+          x: 4,
+          y: 1,
+          length: 2,
+          direction: "E",
+          id: "B"
+        },
+        {
+          x: 2,
+          y: 4,
+          length: 2,
+          direction: "W",
+          id: "C"
+        },
+        {
+          x: 0,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "D"
+        },
+        {
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "E",
+          id: "E"
+        },
+        {
+          x: 2,
+          y: 1,
+          length: 2,
+          direction: "E",
+          id: "F"
+        },
+        {
+          x: 1,
+          y: 5,
+          length: 2,
+          direction: "W",
+          id: "G"
+        },
+        {
+          x: 1,
+          y: 3,
+          length: 2,
+          direction: "N",
+          id: "H"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "I"
+        },
+        {
+          x: 4,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "J"
+        },
+        {
+          x: 0,
+          y: 1,
+          length: 2,
+          direction: "E",
+          id: "K"
+        }
+      ],
+      gates: [
+        {
+          x: 4,
+          y: 2,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 10994,
+      solution: [],
+      level_id: "challenge-9",
+      title: "\u4E24\u7AEF\u90FD\u8981\u770B",
+      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    },
+    {
+      width: 6,
+      height: 6,
+      cars: [
+        {
+          x: 2,
+          y: 5,
+          length: 2,
+          direction: "E",
+          id: "A"
+        },
+        {
+          x: 3,
+          y: 2,
+          length: 2,
+          direction: "N",
+          id: "B"
+        },
+        {
+          x: 0,
+          y: 0,
+          length: 2,
+          direction: "N",
+          id: "C"
+        },
+        {
+          x: 4,
+          y: 2,
+          length: 2,
+          direction: "E",
+          id: "D"
+        },
+        {
+          x: 0,
+          y: 5,
+          length: 2,
+          direction: "E",
+          id: "E"
+        },
+        {
+          x: 3,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "F"
+        },
+        {
+          x: 0,
+          y: 3,
+          length: 2,
+          direction: "S",
+          id: "G"
+        },
+        {
+          x: 2,
+          y: 0,
+          length: 2,
+          direction: "W",
+          id: "H"
+        },
+        {
+          x: 5,
+          y: 4,
+          length: 2,
+          direction: "N",
+          id: "K"
+        },
+        {
+          x: 1,
+          y: 4,
+          length: 2,
+          direction: "E",
+          id: "J"
+        },
+        {
+          x: 0,
+          y: 2,
+          length: 2,
+          direction: "E",
+          id: "Z"
+        }
+      ],
+      gates: [
+        {
+          x: 2,
+          y: 2,
+          trigger: "K"
+        }
+      ],
+      schema_version: 1,
+      seed: 3573,
+      solution: [],
+      level_id: "challenge-10",
+      title: "\u7A84\u7A97\u6536\u5DE5",
+      stage: "\u8F83\u9AD8\u7ED3\u6784\xB7\u5F85\u5B9E\u73A9",
+      goal: "\u5148\u770B\u8C01\u8981\u8FC7\u95F8\u3001\u8C01\u88AB K \u6321\u4F4F\uFF1B\u514D\u8D39\u63D0\u793A\u53EF\u7528\u3002"
+    }
+  ];
+
+  // src/core/game.ts
+  function cells(c) {
+    return Array.from({ length: c.length }, (_, i) => [c.x + (["E", "W"].includes(c.direction) ? i : 0), c.y + (["N", "S"].includes(c.direction) ? i : 0)]);
+  }
+
+  // src/enhanced/core.ts
+  var remaining = (l, s) => l.cars.filter((c) => !s.removed.includes(c.id));
+  var closed = (g, s) => s.removed.includes(g.trigger);
+  function ray(c, l) {
+    const [dx, dy] = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[c.direction];
+    let x = c.x + (c.direction === "E" ? c.length : c.direction === "W" ? -1 : 0), y = c.y + (c.direction === "S" ? c.length : c.direction === "N" ? -1 : 0);
+    const p = [];
+    while (x >= 0 && y >= 0 && x < l.width && y < l.height) {
+      p.push([x, y]);
+      x += dx;
+      y += dy;
+    }
+    return p;
+  }
+  function obstruction(l, s, id) {
+    const cars = remaining(l, s), c = cars.find((c2) => c2.id === id);
+    if (!c) return "\u5DF2\u79BB\u573A";
+    for (const [x, y] of ray(c, l)) {
+      if (l.gates.some((g) => closed(g, s) && g.x === x && g.y === y)) return "\u9053\u95F8";
+      const b = cars.find((v) => v.id !== id && cells(v).some(([a, b2]) => a === x && b2 === y));
+      if (b) return b.id;
+    }
+    return null;
+  }
+  function trapped(l, s) {
+    return remaining(l, s).filter((c) => ray(c, l).some(([x, y]) => l.gates.some((g) => closed(g, s) && g.x === x && g.y === y))).map((c) => c.id);
+  }
+  var won = (l, s) => s.removed.length === l.cars.length;
+  function move(l, s, id) {
+    if (trapped(l, s).length || obstruction(l, s, id) !== null) return s;
+    return { removed: [...s.removed, id] };
+  }
+  function solution(l, start2) {
+    const q = [{ s: start2, path: [] }], seen = /* @__PURE__ */ new Set();
+    for (let i = 0; i < q.length; i++) {
+      const { s, path } = q[i];
+      if (won(l, s)) return path;
+      if (trapped(l, s).length) continue;
+      for (const c of remaining(l, s)) {
+        const n = move(l, s, c.id);
+        if (n === s) continue;
+        const key3 = [...n.removed].sort().join(",");
+        if (seen.has(key3)) continue;
+        seen.add(key3);
+        q.push({ s: n, path: [...path, c.id] });
+      }
+    }
+    return null;
+  }
+  function restore(raw, levels2) {
+    const zero = { version: 1, current: 0, completed: [], removed: [] };
+    try {
+      const v = JSON.parse(raw || "null");
+      if (v?.version !== 1 || !Number.isInteger(v.current) || v.current < 0 || v.current >= levels2.length || !Array.isArray(v.completed) || !Array.isArray(v.removed) || v.removed.length > levels2[v.current].cars.length || new Set(v.removed).size !== v.removed.length) return zero;
+      const done = v.completed.filter((id) => typeof id === "string" && levels2.some((l) => l.level_id === id));
+      let s = { removed: [] };
+      for (const id of v.removed) {
+        const n = move(levels2[v.current], s, id);
+        if (n === s) return { ...zero, current: v.current, completed: done };
+        s = n;
+      }
+      return { version: 1, current: v.current, completed: [...new Set(done)], removed: s.removed };
+    } catch {
+      return zero;
+    }
+  }
+
+  // src/enhanced/art.ts
+  var ox = 24;
+  var oy = 58;
+  var cell = 52;
+  function box(c, x, y, w, h, r, fill) {
+    c.fillStyle = fill;
+    c.beginPath();
+    c.roundRect(x, y, w, h, r);
+    c.fill();
+  }
+  function label(c, s, x, y, size = 12, color = "#3b6266", align = "left") {
+    c.font = `600 ${size}px system-ui,sans-serif`;
+    c.textAlign = align;
+    c.fillStyle = color;
+    c.fillText(s, x, y);
+  }
+  function key(c, x, y, scale = 1) {
+    c.save();
+    c.translate(x, y);
+    c.scale(scale, scale);
+    c.strokeStyle = "#735315";
+    c.lineWidth = 3;
+    c.beginPath();
+    c.arc(-4, 0, 4, 0, Math.PI * 2);
+    c.moveTo(0, 0);
+    c.lineTo(12, 0);
+    c.moveTo(8, 0);
+    c.lineTo(8, 5);
+    c.moveTo(12, 0);
+    c.lineTo(12, 4);
+    c.stroke();
+    c.restore();
+  }
+  function car(c, v, offset, outline, shake2, pressed) {
+    const horizontal = "EW".includes(v.direction), w = (horizontal ? v.length : 1) * cell - 8, h = (horizontal ? 1 : v.length) * cell - 8, len = v.length * cell - 8, x = ox + v.x * cell + 4, y = oy + v.y * cell + 4, angle = { E: 0, S: Math.PI / 2, W: Math.PI, N: -Math.PI / 2 }[v.direction];
+    c.save();
+    c.translate(x + w / 2, y + h / 2);
+    c.rotate(angle);
+    c.translate(offset + shake2, 0);
+    if (pressed) c.scale(0.94, 0.94);
+    c.shadowColor = "#173d4655";
+    c.shadowBlur = 5;
+    c.shadowOffsetY = 4;
+    box(c, -len / 2, -21, len, 42, 15, "#244a54");
+    c.shadowColor = "transparent";
+    for (const a of [-len / 2 + 13, len / 2 - 28]) {
+      box(c, a, -25, 15, 9, 3, "#28424e");
+      box(c, a, 16, 15, 9, 3, "#28424e");
+      box(c, a + 3, -24, 8, 2, 1, "#617680");
+    }
+    const palette = v.id === "K" ? ["#ffe49a", "#eab14c"] : [["#9fdbd1", "#55b3a9"], ["#a9c8f5", "#719cdd"], ["#f4bac0", "#d9879e"], ["#c9bce9", "#a393cf"]][v.id.charCodeAt(0) % 4], gradient = c.createLinearGradient(0, -22, 0, 22);
+    gradient.addColorStop(0, palette[0]);
+    gradient.addColorStop(1, palette[1]);
+    c.fillStyle = gradient;
+    c.beginPath();
+    c.roundRect(-len / 2, -22, len, 44, 14);
+    c.fill();
+    c.strokeStyle = outline || palette[1];
+    c.lineWidth = outline ? 3 : 1.5;
+    c.stroke();
+    box(c, -len / 2 + 9, -18, len - 20, 5, 3, "#ffffff72");
+    box(c, len / 2 - 34, -15, 15, 30, 5, "#355c71");
+    box(c, len / 2 - 32, -13, 6, 26, 3, "#8bc4d9");
+    box(c, -len / 2 + 10, -12, 9, 24, 4, "#537d8b");
+    box(c, len / 2 - 8, -14, 5, 9, 2, "#fff8d5");
+    box(c, len / 2 - 8, 5, 5, 9, 2, "#fff8d5");
+    box(c, -len / 2 + 2, -14, 3, 7, 1, "#d66671");
+    box(c, -len / 2 + 2, 7, 3, 7, 1, "#d66671");
+    c.strokeStyle = "#315261";
+    c.lineWidth = 2;
+    c.lineCap = "round";
+    c.beginPath();
+    c.moveTo(len / 2 - 17, -5);
+    c.lineTo(len / 2 - 12, 0);
+    c.lineTo(len / 2 - 17, 5);
+    c.stroke();
+    if (v.id === "K") key(c, -7, 0, 0.9);
+    else {
+      c.strokeStyle = "#ffffff77";
+      c.beginPath();
+      c.moveTo(-8, -11);
+      c.lineTo(8, -11);
+      c.stroke();
+    }
+    c.restore();
+    label(c, v.id, x + 6 + Math.cos(angle) * offset, y + 12 + Math.sin(angle) * offset, 9, "#304e59");
+  }
+  function drawBoard(c, l, s, moving2, highlight2, shake2) {
+    const victims = trapped(l, s), elapsed = moving2 ? Date.now() - moving2.start : 0;
+    box(c, 0, 0, 360, 384, 18, "#e6eee7");
+    label(c, `P  \u5269 ${remaining(l, s).length} \u8F86`, 24, 28, 15);
+    key(c, 205, 23, 0.65);
+    label(c, "K \u79BB\u573A \xB7 \u9053\u95F8\u843D\u4E0B", 336, 28, 11, "#85672e", "right");
+    box(c, 19, 53, 322, 322, 13, "#c4d3cb");
+    box(c, 24, 58, 312, 312, 9, "#748c8d");
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
+      box(c, ox + x * cell + 2, oy + y * cell + 2, 48, 48, 4, (x + y) % 2 ? "#7d9494" : "#819998");
+      c.strokeStyle = "#d8e7dd88";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(ox + x * cell + 8, oy + y * cell + 7);
+      c.lineTo(ox + x * cell + 8, oy + y * cell + 45);
+      c.lineTo(ox + x * cell + 44, oy + y * cell + 45);
+      c.stroke();
+    }
+    for (let i = 0; i < 25; i++) {
+      c.fillStyle = "#dce5d514";
+      c.fillRect(30 + i * 67 % 300, 64 + i * 43 % 300, 2, 2);
+    }
+    for (const [x, y, angle] of [[180, 45, -Math.PI / 2], [180, 379, Math.PI / 2], [11, 215, Math.PI], [349, 215, 0]]) {
+      c.save();
+      c.translate(x, y);
+      c.rotate(angle);
+      c.strokeStyle = "#759681";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(-4, -4);
+      c.lineTo(1, 0);
+      c.lineTo(-4, 4);
+      c.stroke();
+      c.restore();
+    }
+    if (victims.length) {
+      c.save();
+      c.strokeStyle = "#ffe4b2";
+      c.lineWidth = 3;
+      c.setLineDash([5, 4]);
+      for (const id of victims) {
+        const v = l.cars.find((v2) => v2.id === id);
+        for (const g of l.gates) {
+          const horiz = "EW".includes(v.direction);
+          if (horiz ? g.y === v.y : g.x === v.x) {
+            c.beginPath();
+            c.moveTo(ox + (v.x + (horiz ? v.length / 2 : 0.5)) * cell, oy + (v.y + (horiz ? 0.5 : v.length / 2)) * cell);
+            c.lineTo(ox + (g.x + 0.5) * cell, oy + (g.y + 0.5) * cell);
+            c.stroke();
+          }
+        }
+      }
+      c.restore();
+    }
+    for (const g of l.gates) {
+      const x = ox + g.x * cell, y = oy + g.y * cell, shut = closed(g, s), t = moving2?.car.id === g.trigger ? Math.max(0, Math.min(1, (elapsed - 260) / 340)) : shut ? 1 : 0;
+      box(c, x + 3, y + 3, 46, 46, 8, t === 1 ? "#f1b8a0" : "#e1ca86");
+      c.strokeStyle = "#fff1b0";
+      c.lineWidth = 1;
+      c.setLineDash([3, 3]);
+      c.strokeRect(x + 6, y + 6, 40, 40);
+      c.setLineDash([]);
+      c.save();
+      c.translate(x + 10, y + 29);
+      c.rotate(-1.25 * (1 - t));
+      c.shadowColor = "#614c4c55";
+      c.shadowBlur = 2;
+      c.shadowOffsetY = 3;
+      box(c, -3, -4, 36, 8, 3, "#fff5d6");
+      c.shadowColor = "transparent";
+      for (let a = 3; a < 30; a += 10) box(c, a, -4, 5, 8, 1, "#dc705d");
+      c.restore();
+      box(c, x + 5, y + 24, 11, 18, 4, "#48656a");
+      c.fillStyle = t === 1 ? "#d35557" : "#65c691";
+      c.beginPath();
+      c.arc(x + 10.5, y + 29, 3, 0, Math.PI * 2);
+      c.fill();
+      if (t === 1) {
+        c.strokeStyle = "#ad4d4f";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(x + 37, y + 39, 6, 0, Math.PI * 2);
+        c.moveTo(x + 33, y + 43);
+        c.lineTo(x + 41, y + 35);
+        c.stroke();
+      } else key(c, x + 29, y + 42, 0.45);
+    }
+    c.save();
+    c.beginPath();
+    c.rect(24, 58, 312, 312);
+    c.clip();
+    for (const v of remaining(l, s)) {
+      const tutorial = s.removed.includes("A") ? s.removed.includes("K") ? "B" : "K" : "A", outline = victims.includes(v.id) ? "#ff6d62" : v.id === highlight2 || l.level_id === "overtime-1" && !moving2 && !highlight2 && v.id === tutorial ? "#fff8df" : "";
+      const dt = shake2?.id === v.id ? Date.now() - shake2.start : 999;
+      car(c, v, 0, outline, dt < 240 ? Math.sin(dt / 18) * 3 * (1 - dt / 240) : 0, false);
+    }
+    if (moving2) {
+      const t = Math.max(0, Math.min(1, (elapsed - 55) / 205));
+      car(c, moving2.car, moving2.distance * (1 - (1 - t) ** 2), moving2.car.id === "K" ? "#fff1a7" : "", 0, elapsed < 55);
+    }
+    c.restore();
+    if (won(l, s) && !moving2) {
+      for (let i = 0; i < 14; i++) {
+        const x = 30 + i * 73 % 300, y = 45 + i * 37 % 20;
+        c.save();
+        c.translate(x, y);
+        c.rotate(i);
+        box(c, -2, -3, 4, 6, 1, ["#eab14c", "#65b6a5", "#e6a1a7"][i % 3]);
+        c.restore();
+      }
+      label(c, "\u2713 \u5168\u5458\u6536\u5DE5", 180, 30, 16, "#326f60", "center");
+    }
+  }
+
+  // src/enhanced/sound.ts
+  var settingsKey = "nc-mg-001-enhanced-sound";
+  var notes = {
+    tap: { hz: [620], duration: 0.045, wave: "sine" },
+    exit: { hz: [220, 330], duration: 0.09, wave: "triangle" },
+    blocked: { hz: [145, 115], duration: 0.065, wave: "triangle" },
+    key: { hz: [740, 990], duration: 0.085, wave: "sine" },
+    gate: { hz: [180, 90], duration: 0.075, wave: "triangle" },
+    trapped: { hz: [390, 310], duration: 0.11, wave: "sine" },
+    success: { hz: [523, 659, 784, 1047], duration: 0.1, wave: "sine" },
+    ui: { hz: [460], duration: 0.045, wave: "sine" }
+  };
+  function makeSound(button) {
+    let enabled = true, context, master, active = 0, unavailable = false;
+    const last = /* @__PURE__ */ new Map();
+    try {
+      enabled = localStorage.getItem(settingsKey) !== "off";
+    } catch {
+    }
+    function label2() {
+      button.textContent = enabled ? "\u266A \u97F3\u6548\u5F00" : "\u266A \u97F3\u6548\u5173";
+      button.setAttribute("aria-pressed", String(enabled));
+      button.title = unavailable ? "\u97F3\u9891\u4E0D\u53EF\u7528\uFF0C\u4ECD\u53EF\u9759\u97F3\u6E38\u73A9" : "\u77ED\u97F3\u6548\uFF0C\u65E0\u80CC\u666F\u97F3\u4E50";
+    }
+    function disableAudio() {
+      unavailable = true;
+      label2();
+    }
+    function unlock() {
+      if (!enabled || unavailable) return;
+      try {
+        if (!context) {
+          context = new AudioContext();
+          master = context.createGain();
+          master.gain.value = 0.12;
+          master.connect(context.destination);
+        }
+        if (context.state === "suspended") void context.resume().catch(disableAudio);
+      } catch {
+        disableAudio();
+      }
+    }
+    function play(cue) {
+      if (!enabled || unavailable || !context || !master || context.state !== "running") return;
+      const now = context.currentTime;
+      if (now - (last.get(cue) ?? -100) < 0.08 || active >= 6) return;
+      last.set(cue, now);
+      const n = notes[cue];
+      try {
+        for (let i = 0; i < n.hz.length && active < 6; i++) {
+          const osc = context.createOscillator(), gain = context.createGain(), at = now + 8e-3 + i * n.duration;
+          osc.type = n.wave;
+          osc.frequency.setValueAtTime(n.hz[i], at);
+          if (cue === "exit") osc.frequency.exponentialRampToValueAtTime(n.hz[i] * 1.3, at + n.duration);
+          gain.gain.setValueAtTime(0, at);
+          gain.gain.linearRampToValueAtTime(0.23, at + 8e-3);
+          gain.gain.exponentialRampToValueAtTime(1e-4, at + n.duration);
+          osc.connect(gain);
+          gain.connect(master);
+          active++;
+          osc.onended = () => {
+            active--;
+            osc.disconnect();
+            gain.disconnect();
+          };
+          osc.start(at);
+          osc.stop(at + n.duration + 0.01);
+        }
+      } catch {
+        disableAudio();
+      }
+    }
+    function toggle() {
+      enabled = !enabled;
+      try {
+        localStorage.setItem(settingsKey, enabled ? "on" : "off");
+      } catch {
+      }
+      if (!enabled && master && context) {
+        master.gain.cancelScheduledValues(context.currentTime);
+        master.gain.setValueAtTime(0, context.currentTime);
+      }
+      if (enabled) {
+        unlock();
+        if (master && context) master.gain.setValueAtTime(0.12, context.currentTime);
+        play("ui");
+      }
+      label2();
+    }
+    function pause() {
+      if (context) {
+        try {
+          void context.suspend().catch(() => {
+          });
+        } catch {
+        }
+      }
+    }
+    label2();
+    return { unlock, play, toggle, pause };
+  }
+
+  // src/challenge/app.ts
+  var levels = challenge_default;
+  var key2 = "nc-mg-001-challenge-m1-v1";
+  var logKey = key2 + "-events";
+  var test = new URLSearchParams(location.search).has("test");
+  var $ = (id) => document.getElementById(id);
+  var canvas = $("board");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 360;
+  canvas.height = 384;
+  var sound = makeSound($("sound"));
+  document.addEventListener("pointerdown", () => sound.unlock(), { capture: true });
+  document.addEventListener("keydown", () => sound.unlock(), { capture: true });
+  $("sound").onclick = () => sound.toggle();
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("button,select,summary");
+    if (el && el.id !== "sound") sound.play("ui");
+  }, true);
+  var shake = null;
+  var save;
+  try {
+    save = restore(localStorage.getItem(key2), levels);
+  } catch {
+    save = restore(null, levels);
+  }
+  var message = "\u70B9\u8F66\u6CBF\u7BAD\u5934\u79BB\u573A\u3002\u5148\u770B K \u8D70\u540E\uFF0C\u8C01\u8FD8\u8981\u8FC7\u95F8\u3002";
+  var highlight = "";
+  var paused = false;
+  var timer;
+  var exitMs = 260;
+  var gateMs = 340;
+  var moving = null;
+  var events = [];
+  try {
+    const v = JSON.parse(localStorage.getItem(logKey) || "[]");
+    if (Array.isArray(v)) events = v.filter((x) => ["level_start", "level_complete", "next_level", "restart", "hint", "wrong_order", "level_select"].includes(x?.event) && levels.some((l) => l.level_id === x?.level) && Number.isFinite(x?.elapsedSeconds) && ["automated", "unclassified"].includes(x?.source)).slice(-200);
+  } catch {
+  }
+  var start = performance.now();
+  function record(event) {
+    events.push({ event, level: levels[save.current].level_id, elapsedSeconds: Math.round((performance.now() - start) / 1e3), source: test ? "automated" : "unclassified" });
+    events = events.slice(-200);
+    try {
+      localStorage.setItem(logKey, JSON.stringify(events));
+    } catch {
+    }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(key2, JSON.stringify(save));
+      $("storage").textContent = "";
+    } catch {
+      $("storage").textContent = "\u672C\u673A\u5B58\u50A8\u4E0D\u53EF\u7528\uFF0C\u672C\u5C40\u4ECD\u53EF\u7EE7\u7EED\u3002";
+    }
+  }
+  var level = () => levels[save.current];
+  var state = () => ({ removed: save.removed });
+  var ox2 = 24;
+  var oy2 = 58;
+  function render() {
+    const l = level(), s = state(), victims = trapped(l, s), done = won(l, s);
+    $("levelTitle").textContent = `${save.current + 1}/10 \xB7 ${l.title}`;
+    $("stage").textContent = `${l.stage} \xB7 ${l.goal}`;
+    $("choose").value = String(save.current);
+    drawBoard(ctx, l, s, moving, highlight, shake);
+    const lesson = save.current === 0 ? !s.removed.includes("A") ? "\u70B9\u767D\u6846 A\uFF0C\u6CBF\u7BAD\u5934\u79BB\u573A\uFF1B\u4E0D\u7528\u62D6\u52A8\u3002" : !s.removed.includes("K") ? "A \u5DF2\u8FC7\u95F8\u3002\u70B9\u9EC4\u8272 K\uFF0C\u770B\u9053\u95F8\u843D\u4E0B\u3002" : "\u95F8\u5DF2\u843D\uFF1BB \u4E0D\u7ECF\u8FC7\u95F8\uFF0C\u70B9 B \u5C31\u80FD\u6E05\u573A\u3002" : message;
+    const status = paused ? "\u5DF2\u6682\u505C\uFF0C\u8FD4\u56DE\u540E\u7EE7\u7EED" : moving ? moving.car.id === "K" ? Date.now() - moving.start < exitMs ? "K \u6B63\u5728\u79BB\u573A\uFF0C\u968F\u540E\u843D\u95F8\u2026\u2026" : "\u9053\u95F8\u6B63\u5728\u843D\u4E0B\u2026\u2026" : `${moving.car.id} \u6B63\u5728\u79BB\u573A\u2026\u2026` : victims.length ? `\u95F8\u5DF2\u843D\uFF0C${victims.join("\u3001")} \u88AB\u9053\u95F8\u56F0\u4F4F\uFF1A\u5B83\u8FD8\u8981\u7ECF\u8FC7\u95F8\u4F4D\u3002\u70B9\u300C\u514D\u8D39\u91CD\u5F00\u300D\u518D\u8BD5\u3002` : done ? "\u6E05\u573A\u5B8C\u6210\uFF01\u4E0B\u73ED\u5566 \u2713 \u70B9\u300C\u4E0B\u4E00\u5173\u300D\u7EE7\u7EED\u3002" : highlight ? message : lesson;
+    $("next").textContent = save.current === levels.length - 1 ? "\u5B8C\u6210\xB7\u7ED9\u53CD\u9988" : "\u4E0B\u4E00\u5173 \u2192";
+    $("status").textContent = status;
+    $("status").className = victims.length && !moving ? "failure" : done ? "success" : "";
+    $("restart").classList.toggle("urgent", victims.length > 0 && !moving);
+    $("restart").textContent = "\u514D\u8D39\u91CD\u5F00";
+    canvas.dataset.phase = moving ? moving.car.id === "K" && Date.now() - moving.start >= exitMs ? "gate-closing" : "exiting" : victims.length ? "trapped" : done ? "complete" : "ready";
+    canvas.dataset.trapped = victims.join(",");
+    $("next").disabled = !done || Boolean(moving);
+    $("hint").disabled = Boolean(moving);
+    $("progress").textContent = `\u5DF2\u5B8C\u6210 ${save.completed.length}/${levels.length} \u5173 \xB7 \u65E0\u5012\u8BA1\u65F6 \xB7 \u91CD\u5F00\u4E0D\u6263\u8D44\u6E90`;
+  }
+  function cancel() {
+    if (timer !== void 0) clearTimeout(timer);
+    timer = void 0;
+    moving = null;
+    highlight = "";
+    shake = null;
+  }
+  function frame() {
+    timer = void 0;
+    if (paused) return;
+    if (moving) {
+      const elapsed = Date.now() - moving.start;
+      if (moving.car.id === "K" && elapsed >= exitMs && !moving.gateSound) {
+        moving.gateSound = true;
+        sound.play("gate");
+      }
+      if (elapsed >= exitMs + (moving.car.id === "K" ? gateMs : 0)) {
+        moving = null;
+        message = won(level(), state()) ? "\u6E05\u573A\u5B8C\u6210" : remaining(level(), state()).length ? "\u7EE7\u7EED\u89C2\u5BDF\u8C01\u8981\u8FC7\u95F8" : "";
+        if (won(level(), state())) sound.play("success");
+        else if (trapped(level(), state()).length) sound.play("trapped");
+      }
+    }
+    render();
+    if (moving || shake && Date.now() - shake.start < 240) timer = setTimeout(frame, 16);
+  }
+  function choose(index, how) {
+    cancel();
+    save.current = index;
+    save.removed = [];
+    message = "\u5148\u770B\u95F8\u4F4D\u548C\u8F66\u5934\uFF0C\u8C01\u5FC5\u987B\u5728 K \u524D\u79BB\u5F00\uFF1F";
+    persist();
+    record(how);
+    record("level_start");
+    render();
+  }
+  canvas.addEventListener("pointerdown", (e) => {
+    if (paused || moving || !e.isPrimary || e.button !== 0) return;
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect(), x = (e.clientX - r.left) * 360 / r.width, y = (e.clientY - r.top) * 384 / r.height, gx = Math.floor((x - ox2) / 52), gy = Math.floor((y - oy2) / 52);
+    const c = remaining(level(), state()).find((c2) => gx >= c2.x && gy >= c2.y && gx < c2.x + (["E", "W"].includes(c2.direction) ? c2.length : 1) && gy < c2.y + (["N", "S"].includes(c2.direction) ? c2.length : 1));
+    if (!c) return;
+    sound.play("tap");
+    if (trapped(level(), state()).length) return;
+    const block = obstruction(level(), state(), c.id);
+    if (block) {
+      sound.play("blocked");
+      shake = { id: c.id, start: Date.now() };
+      highlight = c.id;
+      message = `${c.id} \u88AB ${block} \u6321\u4F4F\uFF0C\u5148\u770B\u524D\u65B9\u3002`;
+      if (timer !== void 0) clearTimeout(timer);
+      frame();
+      return;
+    }
+    sound.play(c.id === "K" ? "key" : "exit");
+    const before = state(), next = move(level(), before, c.id);
+    save.removed = next.removed;
+    highlight = "";
+    if (won(level(), state())) {
+      if (!save.completed.includes(level().level_id)) save.completed.push(level().level_id);
+      record("level_complete");
+    } else if (trapped(level(), state()).length) record("wrong_order");
+    persist();
+    const horizontal = ["E", "W"].includes(c.direction), x0 = ox2 + c.x * 52 + 4, y0 = oy2 + c.y * 52 + 4, w = (horizontal ? c.length : 1) * 52 - 8, h = (horizontal ? 1 : c.length) * 52 - 8, distance = { E: ox2 + 312 - x0 + 4, W: x0 + w - ox2 + 4, S: oy2 + 312 - y0 + 4, N: y0 + h - oy2 + 4 }[c.direction];
+    moving = { car: c, start: Date.now(), before, distance };
+    frame();
+  });
+  $("restart").onclick = () => {
+    cancel();
+    save.removed = [];
+    message = "\u5DF2\u91CD\u5F00\u3002K \u79BB\u573A\u524D\u5148\u9001\u8981\u8FC7\u95F8\u7684\u8F66\u3002";
+    persist();
+    record("restart");
+    render();
+  };
+  $("hint").onclick = () => {
+    record("hint");
+    const path = solution(level(), state());
+    highlight = path?.[0] || "";
+    message = path?.length ? `\u514D\u8D39\u63D0\u793A\uFF1A\u5148\u70B9 ${path[0]}\u3002\u767D\u6846\u8F66\u6709\u53EF\u89E3\u7684\u540E\u7EED\u3002` : won(level(), state()) ? "\u5DF2\u7ECF\u6E05\u7A7A" : "\u9053\u95F8\u56F0\u4F4F\u4E86\u8F66\uFF0C\u8BF7\u91CD\u5F00\u3002";
+    render();
+  };
+  $("next").onclick = () => {
+    if (won(level(), state()) && !moving) {
+      if (save.current < levels.length - 1) choose(save.current + 1, "next_level");
+      else {
+        message = "\u5341\u5173\u4F53\u9A8C\u5B8C\u6210\uFF0C\u6B22\u8FCE\u7559\u4E0B\u672C\u673A\u53CD\u9988\u3002";
+        $("form").showModal();
+        render();
+      }
+    }
+  };
+  $("choose").innerHTML = levels.map((l, i) => `<option value="${i}">${i + 1}. ${l.title}</option>`).join("");
+  $("choose").onchange = (e) => choose(Number(e.target.value), "level_select");
+  function lifecycle(hidden) {
+    const wasPaused = paused;
+    paused = hidden;
+    if (hidden) sound.pause();
+    cancel();
+    persist();
+    if (!hidden && wasPaused) message = "\u7EE7\u7EED\u89C2\u5BDF\u8C01\u9700\u8981\u5728 K \u524D\u79BB\u5F00\u3002";
+    render();
+  }
+  document.addEventListener("visibilitychange", () => lifecycle(document.hidden));
+  document.addEventListener("freeze", () => lifecycle(true));
+  document.addEventListener("resume", () => lifecycle(document.hidden));
+  window.addEventListener("pagehide", () => lifecycle(true));
+  window.addEventListener("pageshow", () => lifecycle(document.hidden));
+  $("feedback").onclick = () => {
+    $("form").showModal();
+  };
+  $("closeFeedback").onclick = () => $("form").close();
+  function feedbackText() {
+    return ["\u6536\u5DE5\u843D\u95F8 \xB7 \u5341\u5173\u8BD5\u73A9 v1", `\u6570\u636E\u6765\u6E90\uFF1A${test ? "\u81EA\u52A8\u6D4B\u8BD5\uFF08\u4E0D\u8BA1\u771F\u4EBA\uFF09" : "\u672C\u673A\u8BB0\u5F55\uFF0C\u672A\u6838\u5B9E\u771F\u4EBA"}`, `\u5B8C\u6210\uFF1A${save.completed.length}/10`, ...["understand", "again", "stuck", "feeling"].map((id) => `${$(id).dataset.label}\uFF1A${$(id).selectedOptions[0].textContent}`), "\u672C\u673A\u4E8B\u4EF6\uFF08\u65E0\u59D3\u540D\u3001\u8D26\u53F7\u3001\u8BBE\u5907\u6807\u8BC6\uFF1B\u672A\u81EA\u52A8\u4E0A\u4F20\uFF09\uFF1A", ...events.map((e) => `${e.elapsedSeconds}s ${e.level} ${e.event} ${e.source}`)].join("\n");
+  }
+  $("export").onclick = () => {
+    $("exportText").value = feedbackText();
+    $("exportBox").hidden = false;
+  };
+  $("copy").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText($("exportText").value);
+      $("copied").textContent = "\u5DF2\u590D\u5236\uFF0C\u53EF\u81EA\u884C\u53D1\u9001\u7ED9\u63D0\u4F9B\u8BD5\u73A9\u94FE\u63A5\u7684\u4EBA\u3002";
+    } catch {
+      $("copied").textContent = "\u8BF7\u9009\u62E9\u4E0A\u65B9\u6587\u5B57\u590D\u5236\u3002";
+      $("exportText").select();
+    }
+  };
+  record("level_start");
+  persist();
+  render();
+})();
+</script></html>

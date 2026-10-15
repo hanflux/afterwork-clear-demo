@@ -4,6 +4,7 @@ on:
     paths:
       - 'parking/**'
       - 'enhanced/**'
+      - 'challenge/**'
       - 'tests/play_enhanced.py'
       - 'tests/play_game.py'
       - '.github/workflows/gameplay.yml'
